@@ -326,6 +326,22 @@ var FieldHandler = {
     if (value && (value.startsWith('data:') || value.startsWith('blob:') || value.startsWith('http'))) {
       if (element.tagName === 'AUDIO' || element.tagName === 'VIDEO') {
         element.src = value;
+        // For audio, set autoplay and loop
+        if (element.tagName === 'AUDIO' && fieldName.includes('backgroundAudio')) {
+          element.autoplay = true;
+          element.loop = true;
+          element.volume = 0.5; // Set volume to 50%
+          // Try to play (may fail due to browser autoplay policies)
+          element.play().catch(function(error) {
+            console.log('Autoplay prevented:', error);
+            // User interaction will be needed to play
+          });
+        }
+        // Update all source elements
+        var sources = element.querySelectorAll('source');
+        sources.forEach(function(source) {
+          source.src = value;
+        });
       }
     }
   },

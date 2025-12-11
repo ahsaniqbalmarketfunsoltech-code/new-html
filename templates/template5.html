@@ -544,6 +544,14 @@
         <div class="helper-text">Recommended: 320x360px or similar aspect ratio</div>
       </div>
 
+      <div class="section-title">🔊 Background Audio</div>
+
+      <div class="input-group">
+        <label>Upload Background Audio</label>
+        <input type="file" data-field="backgroundAudio" accept="audio/*" id="backgroundAudioInput">
+        <div class="helper-text">Audio will auto-play in background (MP3, WAV, OGG)</div>
+      </div>
+
       <div class="section-title">🎮 Player Controls</div>
 
       <div class="input-group">
@@ -622,6 +630,14 @@
         <!-- Video/Thumbnail Section -->
         <div class="video-section" data-field="thumbnail" data-field-height="videoHeight">
           <div class="video-overlay"></div>
+          
+          <!-- Background Audio Element -->
+          <audio id="backgroundAudio" data-field="backgroundAudio" autoplay loop style="display: none;">
+            <source src="" type="audio/mpeg">
+            <source src="" type="audio/wav">
+            <source src="" type="audio/ogg">
+            Your browser does not support the audio element.
+          </audio>
 
           <div class="watermark" data-field="watermark" data-field-top="watermarkTop" data-field-right="watermarkRight"
             data-field-size="watermarkSize">Rajtelef</div>

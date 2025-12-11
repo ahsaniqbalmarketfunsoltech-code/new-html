@@ -544,7 +544,7 @@ var ExportFunctions = {
    */
   renderToCanvas: function(htmlContent, width, height) {
     return new Promise(function(resolve, reject) {
-      // Create a temporary container
+      // Create a temporary container with proper styling to ensure footer is visible
       var container = document.createElement('div');
       container.style.width = '320px';
       container.style.height = '480px';
@@ -553,59 +553,173 @@ var ExportFunctions = {
       container.style.top = '0';
       container.style.overflow = 'hidden';
       container.style.backgroundColor = '#ffffff';
-      container.innerHTML = htmlContent;
+      container.style.display = 'flex';
+      container.style.flexDirection = 'column';
+      
+      // If htmlContent is full HTML document, extract just the body content
+      if (htmlContent.includes('<html') || htmlContent.includes('<!DOCTYPE')) {
+        var tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+        var bodyContent = tempDiv.querySelector('body');
+        if (bodyContent) {
+          container.innerHTML = bodyContent.innerHTML;
+        } else {
+          // Try to find preview-panel or video-ad-container
+          var previewPanel = tempDiv.querySelector('.preview-panel');
+          if (previewPanel) {
+            container.innerHTML = previewPanel.innerHTML;
+          } else {
+            var videoAdContainer = tempDiv.querySelector('.video-ad-container');
+            if (videoAdContainer) {
+              container.innerHTML = videoAdContainer.outerHTML;
+            } else {
+              container.innerHTML = htmlContent;
+            }
+          }
+        }
+      } else {
+        container.innerHTML = htmlContent;
+      }
+      
       document.body.appendChild(container);
       
-      // Use html2canvas to render at original 320×480 size
-      if (typeof html2canvas !== 'undefined') {
-        html2canvas(container, {
-          width: 320,
-          height: 480,
-          scale: 2, // Higher scale for better quality
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff'
-        }).then(function(canvas) {
-          document.body.removeChild(container);
-          
-          // Intelligently scale to target size
-          if (width !== 320 || height !== 480) {
-            ExportFunctions.intelligentlyScaleImage(canvas, width, height)
-              .then(resolve)
-              .catch(function(error) {
-                console.error('Intelligent scaling failed, using fallback:', error);
-                resolve(ExportFunctions.fallbackScaleImage(canvas, width, height));
-              });
-          } else {
-            resolve(canvas);
-          }
-        }).catch(function(error) {
-          document.body.removeChild(container);
-          reject(error);
-        });
-      } else {
-        // Fallback: create a simple canvas with text
-        var canvas = document.createElement('canvas');
-        canvas.width = 320;
-        canvas.height = 480;
-        var ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, 320, 480);
-        ctx.fillStyle = '#000000';
-        ctx.font = '16px Arial';
-        ctx.fillText('Rendering...', 10, 30);
-        document.body.removeChild(container);
-        
-        if (width !== 320 || height !== 480) {
-          ExportFunctions.intelligentlyScaleImage(canvas, width, height)
-            .then(resolve)
-            .catch(function(error) {
-              resolve(ExportFunctions.fallbackScaleImage(canvas, width, height));
-            });
+      // Wait for images and content to load, then ensure footer is visible
+      // Increased delay to ensure all content is loaded
+      setTimeout(function() {
+        // CRITICAL: Ensure footer is visible before rendering
+        var footer = container.querySelector('.ad-footer');
+        if (footer) {
+          footer.style.display = 'block';
+          footer.style.visibility = 'visible';
+          footer.style.opacity = '1';
+          footer.style.flexShrink = '0';
+          footer.style.flexGrow = '0';
+          footer.style.position = 'relative';
+          footer.style.zIndex = '10';
+          // Force footer to be at bottom
+          var computedStyle = window.getComputedStyle(footer);
+          console.log('Footer found:', footer, 'Display:', computedStyle.display, 'Visibility:', computedStyle.visibility);
         } else {
-          resolve(canvas);
+          console.warn('Footer (.ad-footer) not found in container!');
         }
-      }
+        var footerText = container.querySelector('.footer-text');
+        if (footerText) {
+          footerText.style.display = 'block';
+          footerText.style.visibility = 'visible';
+          footerText.style.opacity = '1';
+        } else {
+          console.warn('Footer text (.footer-text) not found in container!');
+        }
+        
+        // Ensure video-ad-container has proper height and flex layout
+        var adContainer = container.querySelector('.video-ad-container');
+        if (adContainer) {
+          adContainer.style.height = '480px';
+          adContainer.style.maxHeight = '480px';
+          adContainer.style.minHeight = '480px';
+          adContainer.style.display = 'flex';
+          adContainer.style.flexDirection = 'column';
+          adContainer.style.overflow = 'visible';
+          // Verify footer is inside container
+          var footerInContainer = adContainer.querySelector('.ad-footer');
+          if (!footerInContainer) {
+            console.warn('Footer not found inside video-ad-container!');
+          }
+        }
+        
+        // Ensure video-section doesn't overflow
+        var videoSection = container.querySelector('.video-section');
+        if (videoSection) {
+          videoSection.style.flex = '1 1 0';
+          videoSection.style.minHeight = '0';
+          videoSection.style.overflow = 'hidden';
+        }
+        
+        // Double-check footer visibility after all style updates
+        setTimeout(function() {
+          if (footer) {
+            footer.style.display = 'block !important';
+            footer.style.visibility = 'visible !important';
+            footer.style.opacity = '1 !important';
+          }
+          
+          // Use html2canvas to render at original 320×480 size
+          if (typeof html2canvas !== 'undefined') {
+            html2canvas(container, {
+              width: 320,
+              height: 480,
+              scale: 2, // Higher scale for better quality
+              useCORS: true,
+              allowTaint: true,
+              backgroundColor: '#ffffff',
+              logging: false,
+              windowWidth: 320,
+              windowHeight: 480,
+              onclone: function(clonedDoc) {
+                // Ensure footer is visible in cloned document
+                var clonedFooter = clonedDoc.querySelector('.ad-footer');
+                if (clonedFooter) {
+                  clonedFooter.style.display = 'block';
+                  clonedFooter.style.visibility = 'visible';
+                  clonedFooter.style.opacity = '1';
+                  clonedFooter.style.flexShrink = '0';
+                  clonedFooter.style.flexGrow = '0';
+                }
+                var clonedFooterText = clonedDoc.querySelector('.footer-text');
+                if (clonedFooterText) {
+                  clonedFooterText.style.display = 'block';
+                  clonedFooterText.style.visibility = 'visible';
+                  clonedFooterText.style.opacity = '1';
+                }
+              }
+            }).then(function(canvas) {
+            document.body.removeChild(container);
+            
+            // Verify canvas size matches expected (320*2 = 640, 480*2 = 960)
+            if (canvas.width !== 640 || canvas.height !== 960) {
+              console.warn('Canvas size mismatch. Expected 640x960, got', canvas.width + 'x' + canvas.height);
+            }
+            
+            // Intelligently scale to target size
+            if (width !== 320 || height !== 480) {
+              ExportFunctions.intelligentlyScaleImage(canvas, width, height)
+                .then(resolve)
+                .catch(function(error) {
+                  console.error('Intelligent scaling failed, using fallback:', error);
+                  resolve(ExportFunctions.fallbackScaleImage(canvas, width, height));
+                });
+            } else {
+              resolve(canvas);
+            }
+            }).catch(function(error) {
+              document.body.removeChild(container);
+              reject(error);
+            });
+          } else {
+            // Fallback: create a simple canvas with text
+            var canvas = document.createElement('canvas');
+            canvas.width = 320;
+            canvas.height = 480;
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, 320, 480);
+            ctx.fillStyle = '#000000';
+            ctx.font = '16px Arial';
+            ctx.fillText('Rendering...', 10, 30);
+            document.body.removeChild(container);
+            
+            if (width !== 320 || height !== 480) {
+              ExportFunctions.intelligentlyScaleImage(canvas, width, height)
+                .then(resolve)
+                .catch(function(error) {
+                  resolve(ExportFunctions.fallbackScaleImage(canvas, width, height));
+                });
+            } else {
+              resolve(canvas);
+            }
+          }
+        }, 200); // Additional 200ms delay for style updates
+      }, 800); // Wait 800ms for content to load (increased from 500ms)
     });
   },
   
@@ -710,6 +824,18 @@ var ExportFunctions = {
       forwardBtn.removeAttribute('onclick');
       forwardBtn.style.pointerEvents = 'none';
       forwardBtn.style.cursor = 'default';
+    }
+    
+    // Ensure background audio auto-plays in exported HTML
+    var backgroundAudio = clone.querySelector('#backgroundAudio');
+    if (backgroundAudio) {
+      backgroundAudio.setAttribute('autoplay', 'autoplay');
+      backgroundAudio.setAttribute('loop', 'loop');
+      backgroundAudio.setAttribute('volume', '0.5');
+      // Add play script for autoplay
+      if (backgroundAudio.src && backgroundAudio.src !== '') {
+        backgroundAudio.setAttribute('onloadeddata', 'this.play().catch(function(e) { console.log("Autoplay prevented:", e); });');
+      }
     }
     
     // CRITICAL: Ensure footer is never removed or hidden
@@ -824,7 +950,21 @@ var ExportFunctions = {
     // Get the preview content HTML - preserve exact structure from preview
     // The clone already has the preview-panel structure, so we get its innerHTML
     // which contains the actual ad content (ad-container, banner-ad, etc.)
-    var previewContent = clone.innerHTML;
+    // CRITICAL: Ensure we get the video-ad-container with footer included
+    var videoAdContainer = clone.querySelector('.video-ad-container');
+    var previewContent;
+    if (videoAdContainer) {
+      // Get the entire video-ad-container including footer
+      previewContent = videoAdContainer.outerHTML;
+      // Also ensure footer is in the HTML
+      var footerCheck = clone.querySelector('.ad-footer');
+      if (!footerCheck && videoAdContainer.querySelector('.ad-footer')) {
+        // Footer exists, make sure it's included
+        console.log('Footer found in video-ad-container');
+      }
+    } else {
+      previewContent = clone.innerHTML;
+    }
     
     // Create complete HTML document exactly 320×480 size, centered on page
     // Include all template styles and preserve the preview-panel structure
@@ -908,8 +1048,29 @@ var ExportFunctions = {
       '    #removeThumbnailPreviewBtn {\n' +
       '      display: none !important;\n' +
       '    }\n' +
+      '    #backgroundAudio {\n' +
+      '      display: none !important;\n' +
+      '    }\n' +
       styles + '\n' +
       '  </style>\n' +
+      '  <script>\n' +
+      '    // Auto-play background audio when page loads\n' +
+      '    window.addEventListener("DOMContentLoaded", function() {\n' +
+      '      var audio = document.getElementById("backgroundAudio");\n' +
+      '      if (audio && audio.src && audio.src !== "") {\n' +
+      '        audio.volume = 0.5;\n' +
+      '        audio.loop = true;\n' +
+      '        audio.play().catch(function(error) {\n' +
+      '          console.log("Autoplay prevented by browser:", error);\n' +
+      '          // Try again on first user interaction\n' +
+      '          document.addEventListener("click", function playAudio() {\n' +
+      '            audio.play().catch(function(e) { console.log("Play failed:", e); });\n' +
+      '            document.removeEventListener("click", playAudio);\n' +
+      '          }, { once: true });\n' +
+      '        });\n' +
+      '      }\n' +
+      '    });\n' +
+      '  </script>\n' +
       '</head>\n' +
       '<body>\n' +
       '  <div class="preview-panel">\n' +
@@ -1780,7 +1941,7 @@ var ExportFunctions = {
    * Create video frames from canvas and combine with audio
    * Uses MediaRecorder API to create videos with audio included
    */
-  createVideoFromCanvasAndAudio: async function(canvas, audioFile) {
+  createVideoFromCanvasAndAudio: async function(htmlContent, audioFile, width, height) {
     return new Promise(async function(resolve, reject) {
       try {
         // Get audio duration and create audio context
@@ -1789,7 +1950,85 @@ var ExportFunctions = {
         var decodedAudio = await audioContext.decodeAudioData(audioBuffer.slice(0));
         var duration = decodedAudio.duration;
         
-        console.log('Creating video: duration =', duration, 'seconds');
+        console.log('Creating animated video: duration =', duration, 'seconds');
+        
+        // Create a temporary container for animated HTML
+        var container = document.createElement('div');
+        container.style.width = (width || 320) + 'px';
+        container.style.height = (height || 480) + 'px';
+        container.style.position = 'absolute';
+        container.style.left = '-9999px';
+        container.style.top = '0';
+        container.style.overflow = 'hidden';
+        container.style.backgroundColor = '#ffffff';
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        
+        // Extract HTML content
+        if (htmlContent.includes('<html') || htmlContent.includes('<!DOCTYPE')) {
+          var tempDiv = document.createElement('div');
+          tempDiv.innerHTML = htmlContent;
+          var bodyContent = tempDiv.querySelector('body');
+          if (bodyContent) {
+            container.innerHTML = bodyContent.innerHTML;
+          } else {
+            var previewPanel = tempDiv.querySelector('.preview-panel');
+            if (previewPanel) {
+              container.innerHTML = previewPanel.innerHTML;
+            } else {
+              var videoAdContainer = tempDiv.querySelector('.video-ad-container');
+              if (videoAdContainer) {
+                container.innerHTML = videoAdContainer.outerHTML;
+              } else {
+                container.innerHTML = htmlContent;
+              }
+            }
+          }
+        } else {
+          container.innerHTML = htmlContent;
+        }
+        
+        // Extract and inject styles - scoped to container only
+        var tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+        var styleElements = tempDiv.querySelectorAll('style');
+        var styles = '';
+        styleElements.forEach(function(styleEl) {
+          if (styleEl.textContent) {
+            styles += styleEl.textContent + '\n';
+          }
+        });
+        
+        // Create scoped style tag with unique ID to prevent affecting live preview
+        var styleTag = document.createElement('style');
+        styleTag.setAttribute('data-video-export', 'true');
+        styleTag.textContent = styles;
+        container.insertBefore(styleTag, container.firstChild);
+        
+        // Ensure container is completely isolated and doesn't affect live preview
+        container.setAttribute('data-video-export-container', 'true');
+        container.style.zIndex = '-9999';
+        container.style.pointerEvents = 'none';
+        container.style.isolation = 'isolate'; // CSS isolation to prevent style leakage
+        
+        document.body.appendChild(container);
+        
+        // Wait for content to load
+        await new Promise(function(resolve) { setTimeout(resolve, 500); });
+        
+        // Ensure footer is visible
+        var footer = container.querySelector('.ad-footer');
+        if (footer) {
+          footer.style.display = 'block';
+          footer.style.visibility = 'visible';
+          footer.style.opacity = '1';
+        }
+        
+        // Create canvas for video stream
+        var canvas = document.createElement('canvas');
+        canvas.width = width || 320;
+        canvas.height = height || 480;
+        var ctx = canvas.getContext('2d');
         
         // Create a video stream from canvas
         var videoStream = canvas.captureStream(30); // 30 FPS
@@ -1862,37 +2101,96 @@ var ExportFunctions = {
         
         mediaRecorder.onerror = function(event) {
           console.error('MediaRecorder error:', event);
+          
+          // Cleanup on error to prevent affecting live preview
+          if (container && container.parentNode) {
+            var styleTag = container.querySelector('style[data-video-export="true"]');
+            if (styleTag) {
+              styleTag.remove();
+            }
+            document.body.removeChild(container);
+          }
+          
           reject(new Error('MediaRecorder error: ' + (event.error || 'Unknown error')));
         };
         
-        // For static canvas, we need to trigger frame updates
-        // The canvas stream needs active frame requests to produce video
-        var ctx = canvas.getContext('2d');
+        // Capture animated frames continuously using html2canvas
         var frameInterval = 1000 / 30; // ~33ms per frame (30 FPS)
         var totalFrames = Math.ceil(duration * 30);
         var frameCount = 0;
         var recordingStarted = false;
         
-        // Store the original image data to redraw
-        var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        
-        function requestFrame() {
-          if (frameCount < totalFrames) {
-            // Redraw the canvas to trigger a new frame in the stream
-            // This keeps the video stream active
-            ctx.putImageData(imageData, 0, 0);
-            frameCount++;
-            
-            if (recordingStarted) {
-              setTimeout(requestFrame, frameInterval);
+        function captureAndDrawFrame() {
+          if (frameCount < totalFrames && recordingStarted) {
+            // Use html2canvas to capture current frame with animations (320x480)
+            if (typeof html2canvas !== 'undefined') {
+              html2canvas(container, {
+                width: 320,
+                height: 480,
+                scale: 1,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#ffffff',
+                logging: false,
+                windowWidth: 320,
+                windowHeight: 480
+              }).then(function(frameCanvas) {
+                // Apply same centering and blur effect as image export
+                // Step 1: Create blurred background
+                var blurIntensity = 8;
+                var blurSlider = document.getElementById('blurIntensity');
+                if (blurSlider) {
+                  blurIntensity = parseInt(blurSlider.value) || 8;
+                }
+                
+                var blurredBgCanvas = ExportFunctions.createBlurredAdBackground(
+                  frameCanvas, 
+                  width || 320, 
+                  height || 480, 
+                  blurIntensity
+                );
+                
+                // Step 2: Clear canvas and draw blurred background
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(blurredBgCanvas, 0, 0);
+                
+                // Step 3: Scale ad to fit while maintaining aspect ratio (centered, no stretching)
+                var scale = Math.min((width || 320) / frameCanvas.width, (height || 480) / frameCanvas.height);
+                var scaledWidth = frameCanvas.width * scale;
+                var scaledHeight = frameCanvas.height * scale;
+                var x = ((width || 320) - scaledWidth) / 2;  // Center horizontally
+                var y = ((height || 480) - scaledHeight) / 2; // Center vertically
+                
+                // Step 4: Draw sharp centered ad on top
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(frameCanvas, x, y, scaledWidth, scaledHeight);
+                
+                frameCount++;
+                
+                if (frameCount < totalFrames) {
+                  setTimeout(captureAndDrawFrame, frameInterval);
+                }
+              }).catch(function(error) {
+                console.error('Error capturing frame:', error);
+                // Continue with next frame even if one fails
+                frameCount++;
+                if (frameCount < totalFrames) {
+                  setTimeout(captureAndDrawFrame, frameInterval);
+                }
+              });
+            } else {
+              // Fallback: just draw a blank frame
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              frameCount++;
+              if (frameCount < totalFrames) {
+                setTimeout(captureAndDrawFrame, frameInterval);
+              }
             }
           }
         }
         
-        // Start requesting frames first to ensure stream is active
-        requestFrame();
-        
-        // Small delay to ensure frames are being generated, then start recording
+        // Small delay to ensure container is ready, then start recording
         setTimeout(function() {
           // Start recording
           if (mediaRecorder.state === 'inactive') {
@@ -1904,20 +2202,30 @@ var ExportFunctions = {
             audioSource.start(0);
             console.log('Audio source started');
             
-            // Continue requesting frames
-            requestFrame();
+            // Start capturing animated frames
+            captureAndDrawFrame();
           }
-        }, 200);
+        }, 500);
         
         // Stop recording when audio ends
         var stopTimeout = setTimeout(function() {
           console.log('Stopping recording after timeout');
+          recordingStarted = false;
           if (mediaRecorder.state === 'recording') {
             mediaRecorder.stop();
           }
           audioSource.stop();
           combinedStream.getTracks().forEach(function(track) { track.stop(); });
           videoStream.getTracks().forEach(function(track) { track.stop(); });
+          
+          // Cleanup: Remove style tag first, then container to prevent affecting live preview
+          if (container && container.parentNode) {
+            var styleTag = container.querySelector('style[data-video-export="true"]');
+            if (styleTag) {
+              styleTag.remove();
+            }
+            document.body.removeChild(container);
+          }
         }, (duration + 1) * 1000); // Add 1s buffer
         
       } catch (error) {
@@ -2048,11 +2356,8 @@ var ExportFunctions = {
                 currentLanguage.textContent = '🎬 Creating ' + size.name + ' video for ' + lang.toUpperCase() + '...';
               }
               
-              // Render template to canvas for this size
-              var canvas = await this.renderToCanvas(htmlContent, size.width, size.height);
-              
-              // Create video using MediaRecorder (creates WebM with audio included)
-              var videoBlob = await this.createVideoFromCanvasAndAudio(canvas, TemplateEngine.audioFile);
+              // Create video with animations using MediaRecorder (creates WebM with audio included)
+              var videoBlob = await this.createVideoFromCanvasAndAudio(htmlContent, TemplateEngine.audioFile, size.width, size.height);
               
               // Save as MP4 (MediaRecorder creates WebM, but we'll save with .mp4 extension)
               // Note: The file will be WebM format but with .mp4 extension
