@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Template 2 - Product Card</title>
+  <style>
+    .template-wrapper {
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+    }
+    
+    .input-panel {
+      flex: 1;
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 400px;
+    }
+    
+    .input-group {
+      margin-bottom: 20px;
+    }
+    
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+      font-size: 14px;
+    }
+    
+    .input-group input,
+    .input-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    
+    .input-group input:focus,
+    .input-group textarea:focus {
+      outline: none;
+      border-color: #4CAF50;
+    }
+    
+    .input-group textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    
+    .preview-panel {
+      flex: 1;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+    }
+    
+    .product-card {
+      width: 300px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: transform 0.3s;
+    }
+    
+    .product-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .product-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      background: #f0f0f0;
+    }
+    
+    .product-info {
+      padding: 20px;
+    }
+    
+    .product-name {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    
+    .product-description {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+    
+    .product-price {
+      font-size: 24px;
+      font-weight: bold;
+      color: #4CAF50;
+      margin-bottom: 15px;
+    }
+    
+    .product-button {
+      width: 100%;
+      padding: 12px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    
+    .product-button:hover {
+      background: #45a049;
+    }
+    
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+    }
+    
+    .file-input-wrapper input[type=file] {
+      position: absolute;
+      left: -9999px;
+    }
+    
+    .file-input-label {
+      display: block;
+      padding: 10px;
+      background: #4CAF50;
+      color: white;
+      text-align: center;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    
+    .file-input-label:hover {
+      background: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div class="template-wrapper">
+    <div class="input-panel">
+      <h2 style="margin-bottom: 20px; color: #333;">Edit Content</h2>
+      
+      <div class="input-group">
+        <label for="productName">Product Name</label>
+        <input type="text" id="productName" data-field="productName" placeholder="Enter product name" value="Premium Product">
+      </div>
+      
+      <div class="input-group">
+        <label for="productDescription">Description</label>
+        <textarea id="productDescription" data-field="productDescription" placeholder="Enter description">Amazing product with great features and quality.</textarea>
+      </div>
+      
+      <div class="input-group">
+        <label for="productPrice">Price</label>
+        <input type="text" id="productPrice" data-field="productPrice" placeholder="Enter price" value="$99.99">
+      </div>
+      
+      <div class="input-group">
+        <label for="buttonText">Button Text</label>
+        <input type="text" id="buttonText" data-field="buttonText" placeholder="Enter button text" value="Buy Now">
+      </div>
+      
+      <div class="input-group">
+        <label for="productImage">Product Image</label>
+        <div class="file-input-wrapper">
+          <input type="file" id="productImage" data-field="productImage" accept="image/*">
+          <label for="productImage" class="file-input-label">Choose Image</label>
+        </div>
+      </div>
+      
+      <div class="input-group">
+        <label for="audio">Audio (for video export)</label>
+        <div class="file-input-wrapper">
+          <input type="file" id="audio" data-field="audio" accept="audio/*">
+          <label for="audio" class="file-input-label">Choose Audio</label>
+        </div>
+      </div>
+    </div>
+    
+    <div class="preview-panel">
+      <div class="product-card">
+        <img src="https://via.placeholder.com/300x200" alt="Product" class="product-image" data-field="productImage">
+        <div class="product-info">
+          <h2 class="product-name" data-field="productName">Premium Product</h2>
+          <p class="product-description" data-field="productDescription">Amazing product with great features and quality.</p>
+          <div class="product-price" data-field="productPrice">$99.99</div>
+          <button class="product-button" data-field="buttonText">Buy Now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+

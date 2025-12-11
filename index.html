@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML Ad Template Engine</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.05);
+      margin-bottom: 24px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .header h1 {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 20px;
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    
+    .template-selector {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .template-selector label {
+      font-weight: 600;
+      color: #555;
+    }
+    
+    .template-selector select {
+      padding: 12px 18px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 15px;
+      min-width: 250px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .template-selector select:hover {
+      border-color: #667eea;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+      transform: translateY(-1px);
+    }
+    
+    .template-selector select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .template-container {
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.05);
+      min-height: 600px;
+      position: relative;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    
+    .loading.active {
+      display: block;
+    }
+    
+    .spinner {
+      border: 4px solid rgba(102, 126, 234, 0.1);
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 0.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+      margin: 30px auto;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .shared-panel {
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      padding: 32px;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.05);
+      margin-top: 24px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .shared-panel h2 {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 24px;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    
+    .export-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    
+    .btn {
+      padding: 14px 28px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      letter-spacing: 0.3px;
+    }
+    
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+    
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
+    }
+    
+    .btn-secondary:active {
+      transform: translateY(-1px);
+    }
+    
+    .btn:disabled {
+      background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+      opacity: 0.6;
+    }
+    
+    .languages-section {
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 2px solid rgba(102, 126, 234, 0.1);
+    }
+    
+    .languages-section h3 {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+    
+    .language-dropdown-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+    }
+    
+    .language-dropdown {
+      position: relative;
+    }
+    
+    .language-dropdown-button {
+      padding: 14px 18px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 15px;
+      color: #333;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .language-dropdown-button:hover {
+      border-color: #667eea;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+      transform: translateY(-1px);
+    }
+    
+    .dropdown-arrow {
+      font-size: 10px;
+      color: #666;
+      transition: transform 0.3s;
+    }
+    
+    .language-dropdown.open .dropdown-arrow {
+      transform: rotate(180deg);
+    }
+    
+    .language-dropdown-content {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 2px solid #667eea;
+      border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.15), 0 4px 12px rgba(102, 126, 234, 0.2);
+      z-index: 1000;
+      max-height: 400px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      margin-top: 8px;
+      animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .language-dropdown-search {
+      padding: 14px;
+      border-bottom: 2px solid #f0f0f0;
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    }
+    
+    .language-dropdown-search input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+    
+    .language-dropdown-search input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .language-dropdown-list {
+      overflow-y: auto;
+      max-height: 300px;
+      padding: 5px;
+    }
+    
+    .language-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      margin: 2px 0;
+    }
+    
+    .language-checkbox:hover {
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+      transform: translateX(4px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .language-checkbox input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: #667eea;
+      transition: transform 0.2s;
+    }
+    
+    .language-checkbox input[type="checkbox"]:hover {
+      transform: scale(1.1);
+    }
+    
+    .language-checkbox label {
+      cursor: pointer;
+      color: #333;
+      font-size: 14px;
+      flex: 1;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    
+    .language-checkbox:hover label {
+      color: #667eea;
+    }
+    
+    #timeEstimate {
+      font-size: 15px;
+      color: #667eea;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      border-radius: 12px;
+      border-left: 4px solid #667eea;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    #timeEstimate strong {
+      color: #764ba2;
+      font-weight: 700;
+    }
+    
+    #progressIndicator {
+      margin-top: 16px;
+      padding: 24px;
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      border-radius: 12px;
+      display: none;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      border: 1px solid rgba(102, 126, 234, 0.1);
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    #progressText {
+      font-size: 15px;
+      color: #333;
+      font-weight: 600;
+    }
+    
+    #progressBar {
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      height: 100%;
+      width: 0%;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    #progressBar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+    
+    #currentLanguage {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #666;
+      padding: 8px 12px;
+      background: rgba(102, 126, 234, 0.05);
+      border-radius: 8px;
+      font-weight: 500;
+    }
+    
+    /* Blur Control Slider Styles */
+    #blurIntensity {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      height: 8px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #e0e0e0 0%, #bdbdbd 100%);
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    
+    #blurIntensity::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+      transition: all 0.3s ease;
+    }
+    
+    #blurIntensity::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.6);
+    }
+    
+    #blurIntensity::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+      transition: all 0.3s ease;
+    }
+    
+    #blurIntensity::-moz-range-thumb:hover {
+      transform: scale(1.2);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.6);
+    }
+    
+    #blurIntensity::-moz-range-track {
+      height: 8px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #e0e0e0 0%, #bdbdbd 100%);
+    }
+    
+    /* Blur Preview Styles */
+    #blurPreview {
+      transition: all 0.3s ease;
+    }
+    
+    #blurPreview:hover {
+      transform: scale(1.02);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+    
+    #blurPreviewCanvas {
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+    }
+    
+    @media (max-width: 768px) {
+      #blurControl > div {
+        flex-direction: column !important;
+      }
+      
+      #blurPreview {
+        width: 100% !important;
+        max-width: 300px;
+        margin: 0 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🎨 HTML Ad Template Engine</h1>
+    <div class="template-selector">
+      <label for="templateSelect">Select Template:</label>
+      <select id="templateSelect">
+        <option value="">-- Loading Templates --</option>
+      </select>
+    </div>
+  </div>
+  
+  <div class="template-container" id="templateContainer">
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Loading template...</p>
+    </div>
+  </div>
+  
+    <div class="shared-panel" id="sharedPanel" style="display: none;">
+    <h2>Export Options</h2>
+    
+    <div id="blurControl" style="margin-bottom: 20px; padding: 16px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border-radius: 12px; border-left: 4px solid #667eea; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+      <div style="display: flex; gap: 20px; align-items: flex-start;">
+        <!-- Blur Control Section -->
+        <div style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <label for="blurIntensity" style="font-weight: 600; color: #667eea; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+              <span>🌫️</span> Background Blur Intensity
+            </label>
+            <span id="blurValue" style="font-weight: 700; color: #667eea; font-size: 16px; min-width: 50px; text-align: right;">8</span>
+          </div>
+          <input type="range" id="blurIntensity" min="1" max="15" value="8" step="1" style="width: 100%;">
+          <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: #999;">
+            <span>Light</span>
+            <span>Medium</span>
+            <span>Heavy</span>
+          </div>
+        </div>
+        
+        <!-- Blur Preview Section -->
+        <div style="flex: 0 0 200px; display: flex; flex-direction: column; align-items: center;">
+          <div style="font-size: 12px; color: #667eea; font-weight: 600; margin-bottom: 8px; text-align: center;">Live Preview</div>
+          <div id="blurPreview" style="width: 200px; height: 150px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 2px solid rgba(102, 126, 234, 0.3); background: #f0f0f0; position: relative;">
+            <canvas id="blurPreviewCanvas" width="200" height="150" style="display: block; width: 100%; height: 100%;"></canvas>
+          </div>
+          <div style="font-size: 10px; color: #999; margin-top: 6px; text-align: center;">Demo: 320×480 → 1200×1200</div>
+        </div>
+      </div>
+    </div>
+    <div class="export-buttons">
+      <button class="btn btn-primary" id="downloadZipBtn">📦 Download Master ZIP</button>
+      <button class="btn btn-secondary" id="downloadImagesBtn">🖼️ Download Master Images ZIP</button>
+      <button class="btn btn-secondary" id="downloadVideoBtn" style="display: none;">🎬 Download Video ZIP (WebM, 3 sizes per language)</button>
+    </div>
+    <div id="timeEstimate" style="margin-top: 16px; padding: 16px 20px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border-radius: 12px; border-left: 4px solid #667eea; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: none; animation: fadeIn 0.3s ease-out;">
+      <strong style="color: #667eea; font-size: 15px;">⏱️ Estimated Time:</strong> <span id="timeEstimateValue" style="color: #333; font-weight: 600;">Calculating...</span>
+    </div>
+    <div id="progressIndicator" style="margin-top: 16px; padding: 24px; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); border: 1px solid rgba(102, 126, 234, 0.1); display: none; animation: fadeIn 0.3s ease-out;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <strong style="color: #667eea; font-size: 16px;">📊 Progress:</strong>
+        <span id="progressText" style="color: #333; font-weight: 600; font-size: 15px;">0 / 0 languages</span>
+      </div>
+      <div style="background: #e8eaf6; border-radius: 12px; height: 28px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+        <div id="progressBar" style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); height: 100%; width: 0%; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; font-weight: 700; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);">
+          <span id="progressPercent">0%</span>
+        </div>
+      </div>
+      <div id="currentLanguage" style="margin-top: 14px; font-size: 14px; color: #666; padding: 10px 14px; background: rgba(102, 126, 234, 0.05); border-radius: 8px; font-weight: 500;"></div>
+      <div id="timeRemaining" style="margin-top: 12px; font-size: 15px; color: #667eea; padding: 12px 16px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border-radius: 8px; font-weight: 700; text-align: center; display: none;">
+        <span style="font-size: 18px;">⏱️</span> <span id="timeRemainingValue">0</span> seconds remaining
+      </div>
+    </div>
+    
+    <div class="languages-section">
+      <h3>Select Languages for Export:</h3>
+      <div class="language-dropdown-wrapper">
+        <div class="language-dropdown" id="languageDropdown">
+          <div class="language-dropdown-button" id="languageDropdownButton">
+            <span id="languageDropdownText">Select Languages (0 selected)</span>
+            <span class="dropdown-arrow">▼</span>
+          </div>
+          <div class="language-dropdown-content" id="languageDropdownContent" style="display: none;">
+            <div class="language-dropdown-search">
+              <input type="text" id="languageSearch" placeholder="Search languages...">
+            </div>
+            <div class="language-dropdown-list" id="languageDropdownList">
+        <div class="language-checkbox" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%); font-weight: 700; border-bottom: 2px solid rgba(102, 126, 234, 0.3); margin-bottom: 8px; padding: 14px; border-radius: 8px;">
+          <input type="checkbox" id="selectAllLanguages" style="width: 22px; height: 22px; accent-color: #667eea; cursor: pointer;">
+          <label for="selectAllLanguages" style="font-weight: 700; color: #667eea; font-size: 15px; cursor: pointer;">Select All Languages</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-en" value="en" checked>
+          <label for="lang-en">English</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-es" value="es">
+          <label for="lang-es">Spanish</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-fr" value="fr">
+          <label for="lang-fr">French</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-de" value="de">
+          <label for="lang-de">German</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-it" value="it">
+          <label for="lang-it">Italian</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-pt" value="pt">
+          <label for="lang-pt">Portuguese</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-zh" value="zh">
+          <label for="lang-zh">Chinese</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-ja" value="ja">
+          <label for="lang-ja">Japanese</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-ko" value="ko">
+          <label for="lang-ko">Korean</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-ar" value="ar">
+          <label for="lang-ar">Arabic</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-ru" value="ru">
+          <label for="lang-ru">Russian</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-hi" value="hi">
+          <label for="lang-hi">Hindi</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-nl" value="nl">
+          <label for="lang-nl">Dutch</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-pl" value="pl">
+          <label for="lang-pl">Polish</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-tr" value="tr">
+          <label for="lang-tr">Turkish</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-sv" value="sv">
+          <label for="lang-sv">Swedish</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-da" value="da">
+          <label for="lang-da">Danish</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-nb" value="nb">
+          <label for="lang-nb">Norwegian</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-fi" value="fi">
+          <label for="lang-fi">Finnish</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-cs" value="cs">
+          <label for="lang-cs">Czech</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-hu" value="hu">
+          <label for="lang-hu">Hungarian</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-ro" value="ro">
+          <label for="lang-ro">Romanian</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-el" value="el">
+          <label for="lang-el">Greek</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-th" value="th">
+          <label for="lang-th">Thai</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-vi" value="vi">
+          <label for="lang-vi">Vietnamese</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-id" value="id">
+          <label for="lang-id">Indonesian</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-ms" value="ms">
+          <label for="lang-ms">Malay</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-uk" value="uk">
+          <label for="lang-uk">Ukrainian</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-he" value="he">
+          <label for="lang-he">Hebrew</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-fa" value="fa">
+          <label for="lang-fa">Persian</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-bn" value="bn">
+          <label for="lang-bn">Bengali</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-ur" value="ur">
+          <label for="lang-ur">Urdu</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-pt-BR" value="pt-BR">
+          <label for="lang-pt-BR">Portuguese (BR)</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-zh-CN" value="zh-CN">
+          <label for="lang-zh-CN">Chinese (Simplified)</label>
+        </div>
+        <div class="language-checkbox">
+          <input type="checkbox" id="lang-zh-TW" value="zh-TW">
+          <label for="lang-zh-TW">Chinese (Traditional)</label>
+        </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- External Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Load FFmpeg.wasm - Use jsDelivr for better CORS support -->
+  <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/util.js"></script>
+  <script>
+  // Store reference to FFmpeg once loaded
+  window.ffmpegReady = false;
+  (function() {
+    // Check if FFmpeg loaded
+    function checkFFmpeg() {
+      if (typeof window !== 'undefined' && window.FFmpeg) {
+        window.ffmpegReady = true;
+        console.log('FFmpeg UMD loaded. Available as:', typeof window.FFmpeg);
+        if (window.FFmpeg.FFmpeg) {
+          console.log('FFmpeg.FFmpeg found');
+        }
+      } else if (typeof FFmpeg !== 'undefined') {
+        window.ffmpegReady = true;
+        window.FFmpeg = FFmpeg; // Make it available on window
+        console.log('FFmpeg global loaded');
+      }
+    }
+    
+    // Check immediately
+    checkFFmpeg();
+    
+    // Also check after a short delay in case script loads async
+    setTimeout(checkFFmpeg, 100);
+    setTimeout(checkFFmpeg, 500);
+  })();
+  </script>
+  
+  <!-- Core Application Scripts -->
+  <script src="js/functions.js"></script>
+  <script src="js/engine.js"></script>
+  
+  <script>
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', function() {
+      TemplateEngine.init();
+    });
+  </script>
+</body>
+</html>
+

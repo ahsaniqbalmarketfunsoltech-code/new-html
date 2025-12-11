@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Template 3 - Social Media Post</title>
+  <style>
+    .template-wrapper {
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+    }
+    
+    .input-panel {
+      flex: 1;
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 400px;
+    }
+    
+    .input-group {
+      margin-bottom: 20px;
+    }
+    
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+      font-size: 14px;
+    }
+    
+    .input-group input,
+    .input-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    
+    .input-group input:focus,
+    .input-group textarea:focus {
+      outline: none;
+      border-color: #4CAF50;
+    }
+    
+    .input-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .preview-panel {
+      flex: 1;
+      background: #f0f0f0;
+      padding: 20px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 500px;
+    }
+    
+    .social-post {
+      width: 500px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    
+    .post-header {
+      padding: 15px 20px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #ddd;
+    }
+    
+    .header-info {
+      flex: 1;
+    }
+    
+    .username {
+      font-weight: bold;
+      color: #333;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+    
+    .timestamp {
+      font-size: 12px;
+      color: #999;
+    }
+    
+    .post-image {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+      background: #f0f0f0;
+    }
+    
+    .post-content {
+      padding: 15px 20px;
+    }
+    
+    .post-text {
+      font-size: 14px;
+      color: #333;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+    
+    .post-actions {
+      display: flex;
+      gap: 20px;
+      padding: 10px 20px;
+      border-top: 1px solid #eee;
+    }
+    
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      color: #666;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 5px;
+    }
+    
+    .action-btn:hover {
+      color: #4CAF50;
+    }
+    
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+    }
+    
+    .file-input-wrapper input[type=file] {
+      position: absolute;
+      left: -9999px;
+    }
+    
+    .file-input-label {
+      display: block;
+      padding: 10px;
+      background: #4CAF50;
+      color: white;
+      text-align: center;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    
+    .file-input-label:hover {
+      background: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div class="template-wrapper">
+    <div class="input-panel">
+      <h2 style="margin-bottom: 20px; color: #333;">Edit Content</h2>
+      
+      <div class="input-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" data-field="username" placeholder="Enter username" value="@yourbrand">
+      </div>
+      
+      <div class="input-group">
+        <label for="avatar">Avatar Image</label>
+        <div class="file-input-wrapper">
+          <input type="file" id="avatar" data-field="avatar" accept="image/*">
+          <label for="avatar" class="file-input-label">Choose Avatar</label>
+        </div>
+      </div>
+      
+      <div class="input-group">
+        <label for="postText">Post Text</label>
+        <textarea id="postText" data-field="postText" placeholder="Enter post text">Check out our amazing new product! 🎉</textarea>
+      </div>
+      
+      <div class="input-group">
+        <label for="postImage">Post Image</label>
+        <div class="file-input-wrapper">
+          <input type="file" id="postImage" data-field="postImage" accept="image/*">
+          <label for="postImage" class="file-input-label">Choose Post Image</label>
+        </div>
+      </div>
+      
+      <div class="input-group">
+        <label for="audio">Audio (for video export)</label>
+        <div class="file-input-wrapper">
+          <input type="file" id="audio" data-field="audio" accept="audio/*">
+          <label for="audio" class="file-input-label">Choose Audio</label>
+        </div>
+      </div>
+    </div>
+    
+    <div class="preview-panel">
+      <div class="social-post">
+        <div class="post-header">
+          <img src="https://via.placeholder.com/40" alt="Avatar" class="avatar" data-field="avatar">
+          <div class="header-info">
+            <div class="username" data-field="username">@yourbrand</div>
+            <div class="timestamp">2 hours ago</div>
+          </div>
+        </div>
+        <img src="https://via.placeholder.com/500x300" alt="Post" class="post-image" data-field="postImage">
+        <div class="post-content">
+          <p class="post-text" data-field="postText">Check out our amazing new product! 🎉</p>
+        </div>
+        <div class="post-actions">
+          <button class="action-btn">❤️ Like</button>
+          <button class="action-btn">💬 Comment</button>
+          <button class="action-btn">📤 Share</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+

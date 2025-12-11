@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Template 1 - Banner Ad</title>
+  <style>
+    .template-wrapper {
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+    }
+    
+    .input-panel {
+      flex: 1;
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 400px;
+    }
+    
+    .input-group {
+      margin-bottom: 20px;
+    }
+    
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+      font-size: 14px;
+    }
+    
+    .input-group input,
+    .input-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    
+    .input-group input:focus,
+    .input-group textarea:focus {
+      outline: none;
+      border-color: #4CAF50;
+    }
+    
+    .input-group textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    
+    .preview-panel {
+      flex: 1;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+    }
+    
+    .banner-ad {
+      width: 728px;
+      height: 90px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    
+    .banner-content {
+      flex: 1;
+    }
+    
+    .banner-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .banner-subtitle {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    
+    .banner-image {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid white;
+      margin-left: 20px;
+    }
+    
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+    }
+    
+    .file-input-wrapper input[type=file] {
+      position: absolute;
+      left: -9999px;
+    }
+    
+    .file-input-label {
+      display: block;
+      padding: 10px;
+      background: #4CAF50;
+      color: white;
+      text-align: center;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    
+    .file-input-label:hover {
+      background: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div class="template-wrapper">
+    <div class="input-panel">
+      <h2 style="margin-bottom: 20px; color: #333;">Edit Content</h2>
+      
+      <div class="input-group">
+        <label for="title">Title</label>
+        <input type="text" id="title" data-field="title" placeholder="Enter title" value="Special Offer">
+      </div>
+      
+      <div class="input-group">
+        <label for="subtitle">Subtitle</label>
+        <input type="text" id="subtitle" data-field="subtitle" placeholder="Enter subtitle" value="Get 50% off today!">
+      </div>
+      
+      <div class="input-group">
+        <label for="image">Image</label>
+        <div class="file-input-wrapper">
+          <input type="file" id="image" data-field="image" accept="image/*">
+          <label for="image" class="file-input-label">Choose Image</label>
+        </div>
+      </div>
+      
+      <div class="input-group">
+        <label for="audio">Audio (for video export)</label>
+        <div class="file-input-wrapper">
+          <input type="file" id="audio" data-field="audio" accept="audio/*">
+          <label for="audio" class="file-input-label">Choose Audio</label>
+        </div>
+      </div>
+    </div>
+    
+    <div class="preview-panel">
+      <div class="banner-ad">
+        <div class="banner-content">
+          <h1 class="banner-title" data-field="title">Special Offer</h1>
+          <p class="banner-subtitle" data-field="subtitle">Get 50% off today!</p>
+        </div>
+        <img src="https://via.placeholder.com/60" alt="Ad Image" class="banner-image" data-field="image">
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
