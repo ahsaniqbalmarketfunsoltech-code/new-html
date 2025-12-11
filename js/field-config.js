@@ -143,6 +143,17 @@ var FieldConfig = {
     },
     
     // ============================================
+    // ANIMATION FIELDS - Updates CSS animation classes
+    // ============================================
+    'animation': {
+      pattern: /(Animation|animation|anim|Anim)$/i,
+      previewUpdate: 'class',
+      exportHandling: 'class',
+      inputTypes: ['select'],
+      description: 'Animation fields - applies CSS animation classes'
+    },
+    
+    // ============================================
     // SELECT/DROPDOWN FIELDS - Updates selected option
     // ============================================
     'select': {

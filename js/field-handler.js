@@ -23,6 +23,11 @@ var FieldHandler = {
     
     // Handle based on field type
     switch (type) {
+      case 'animation':
+        // Update animation class
+        this.updateAnimation(element, value, fieldName);
+        break;
+        
       case 'text':
       case 'select':
         // Update text content
@@ -167,7 +172,59 @@ var FieldHandler = {
       return;
     }
     
-    // For thumbnail fields or video-section, ALWAYS use background-image
+    // IMPORTANT: Check if element is IMG tag FIRST (before checking thumbnail field name)
+    // IMG tags should always use src attribute, not background-image
+    // Template6: Uses <img data-field="thumbnail1"> → needs src
+    // Template5: Uses <div class="video-section" data-field="thumbnail"> → needs background-image
+    if (element.tagName === 'IMG') {
+      if (value.startsWith('data:') || value.startsWith('blob:') || value.startsWith('http')) {
+        // Set src first
+        element.src = value;
+        
+        // Hide logo text if logo image is uploaded (template6)
+        if (fieldName === 'appLogoImage') {
+          var logoText = element.parentElement.querySelector('.app-logo-text');
+          if (logoText) {
+            logoText.style.display = 'none';
+          }
+          element.style.display = 'block';
+          element.style.width = '100%';
+          element.style.height = '100%';
+          element.style.objectFit = 'cover';
+        }
+        
+        // For thumbnail images in IMG tags (template6: thumbnail1, thumbnail2, thumbnail3)
+        if (fieldName.includes('thumbnail')) {
+          // Ensure image is visible and properly sized
+          element.style.display = 'block';
+          element.style.visibility = 'visible';
+          element.style.opacity = '1';
+          element.style.width = '100%';
+          element.style.height = '100%';
+          element.style.objectFit = 'cover';
+          element.style.maxWidth = '100%';
+          element.style.maxHeight = '100%';
+          
+          // Ensure parent container shows the image
+          if (element.parentElement) {
+            element.parentElement.style.overflow = 'visible';
+          }
+          
+          // Force image to load
+          element.onload = function() {
+            this.style.display = 'block';
+            this.style.visibility = 'visible';
+            this.style.opacity = '1';
+          };
+          element.onerror = function() {
+            console.error('Error loading thumbnail image for field:', fieldName);
+          };
+        }
+      }
+      return; // Exit early for IMG tags - prevents fallthrough to background-image logic
+    }
+    
+    // For thumbnail fields on NON-IMG elements (like video-section), use background-image
     if (fieldName.includes('thumbnail') || element.classList.contains('video-section') || 
         element.classList.contains('image-container')) {
       if (value.startsWith('data:image') || value.startsWith('blob:') || value.startsWith('http')) {
@@ -240,11 +297,8 @@ var FieldHandler = {
       return;
     }
     
-    if (element.tagName === 'IMG') {
-      if (value.startsWith('data:') || value.startsWith('blob:') || value.startsWith('http')) {
-        element.src = value;
-      }
-    } else {
+    // For other non-IMG elements, use background-image
+    if (element.tagName !== 'IMG') {
       // Background image - ALWAYS use background-image for containers
       if (value.startsWith('data:image') || value.startsWith('blob:') || value.startsWith('http')) {
         element.style.backgroundImage = 'url(' + value + ')';
@@ -410,6 +464,41 @@ var FieldHandler = {
   },
   
   /**
+   * Update animation class (for download button animations)
+   */
+  updateAnimation: function(element, value, fieldName) {
+    if (!value || value === 'none') {
+      // Remove all animation classes
+      var animationClasses = [
+        'anim-none', 'anim-pulse-glow', 'anim-shimmer', 'anim-bounce', 'anim-glow-pulse',
+        'anim-ripple', 'anim-rotate-glow', 'anim-wave', 'anim-neon', 'anim-gradient-shift',
+        'anim-float', 'anim-scale-pulse', 'anim-shadow-pulse', 'anim-border-glow',
+        'anim-particles', 'anim-rainbow', 'anim-magnetic', 'anim-shake', 'anim-slide-glow',
+        'anim-double-pulse', 'anim-breathing', 'anim-sparkle', 'anim-fire'
+      ];
+      animationClasses.forEach(function(cls) {
+        element.classList.remove(cls);
+      });
+      return;
+    }
+    
+    // Remove all animation classes first
+    var animationClasses = [
+      'anim-none', 'anim-pulse-glow', 'anim-shimmer', 'anim-bounce', 'anim-glow-pulse',
+      'anim-ripple', 'anim-rotate-glow', 'anim-wave', 'anim-neon', 'anim-gradient-shift',
+      'anim-float', 'anim-scale-pulse', 'anim-shadow-pulse', 'anim-border-glow',
+      'anim-particles', 'anim-rainbow', 'anim-magnetic', 'anim-shake', 'anim-slide-glow',
+      'anim-double-pulse', 'anim-breathing', 'anim-sparkle', 'anim-fire'
+    ];
+    animationClasses.forEach(function(cls) {
+      element.classList.remove(cls);
+    });
+    
+    // Add selected animation class
+    element.classList.add('anim-' + value);
+  },
+  
+  /**
    * Handle file input (images, audio, video)
    */
   handleFileInput: function(fieldName, file, callback) {
@@ -426,9 +515,35 @@ var FieldHandler = {
       // Store in templateData
       TemplateEngine.templateData[fieldName] = dataUrl;
       
-      // Update preview
+      // Update preview - check both templateContainer and preview-panel
       var container = document.getElementById('templateContainer');
+      if (!container) {
+        // Fallback: try to find preview-panel or any container with preview
+        container = document.querySelector('.preview-panel') || document.querySelector('[class*="preview"]');
+      }
       if (container) {
+        // For thumbnail images, specifically target IMG tags in the preview
+        if (fieldName.includes('thumbnail')) {
+          var imgElements = container.querySelectorAll('img[data-field="' + fieldName + '"]');
+          imgElements.forEach(function(img) {
+            if (img.tagName === 'IMG') {
+              img.src = dataUrl;
+              img.style.display = 'block';
+              img.style.visibility = 'visible';
+              img.style.opacity = '1';
+              img.style.width = '100%';
+              img.style.height = '100%';
+              img.style.objectFit = 'cover';
+              img.onload = function() {
+                this.style.display = 'block';
+                this.style.visibility = 'visible';
+                this.style.opacity = '1';
+              };
+            }
+          });
+        }
+        
+        // Also update using the standard method for all fields
         var previewElements = container.querySelectorAll('[data-field="' + fieldName + '"]');
         previewElements.forEach(function(element) {
           if (element.tagName !== 'INPUT' && element.tagName !== 'TEXTAREA' && element.tagName !== 'SELECT') {

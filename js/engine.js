@@ -396,6 +396,15 @@ var TemplateEngine = {
 
     this.templateData[fieldName] = value;
 
+    // Special handling for animation fields
+    if (fieldName.includes('Animation') || fieldName.includes('animation')) {
+      var animationElements = container.querySelectorAll('[data-field-animation="' + fieldName + '"]');
+      animationElements.forEach(function(element) {
+        FieldHandler.updateAnimation(element, value, fieldName);
+      });
+      return; // Exit early for animation fields
+    }
+
     // Find the input element
     var inputElement = container.querySelector('input[data-field="' + fieldName + '"], textarea[data-field="' + fieldName + '"], select[data-field="' + fieldName + '"]');
     var inputType = inputElement ? inputElement.type : '';

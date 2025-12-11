@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Template 6 - App Download Ad</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+    }
+
+    .template-wrapper {
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .input-panel {
+      flex: 1;
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 12px;
+      max-width: 420px;
+      height: fit-content;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
+      max-height: calc(100vh - 40px);
+    }
+
+    .input-panel h2 {
+      margin-bottom: 25px;
+      color: #333;
+      font-size: 24px;
+      border-bottom: 3px solid #4285f4;
+      padding-bottom: 10px;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #555;
+      font-size: 14px;
+    }
+
+    .input-group input[type="text"],
+    .input-group input[type="number"] {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    .input-group input[type="text"]:focus,
+    .input-group input[type="number"]:focus {
+      outline: none;
+      border-color: #4285f4;
+    }
+
+    .input-group input[type="color"] {
+      width: 100%;
+      height: 45px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .input-group input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border: 2px dashed #e0e0e0;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #4285f4;
+      margin: 25px 0 15px 0;
+      padding-top: 15px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .preview-panel {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .app-ad-container {
+      width: 320px;
+      height: 480px;
+      background: #ffffff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .ad-background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 300px;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.4;
+      z-index: 1;
+    }
+
+    .status-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 16px;
+      z-index: 10;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 600;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0) 100%);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .status-time {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .status-icons {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      font-size: 0;
+    }
+
+    .status-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Signal Strength Icon */
+    .signal-icon {
+      width: 18px;
+      height: 12px;
+      position: relative;
+      display: inline-flex;
+      align-items: flex-end;
+      gap: 2px;
+    }
+
+    .signal-icon::before,
+    .signal-icon::after {
+      content: '';
+      background: #ffffff;
+      border-radius: 1px;
+    }
+
+    .signal-icon::before {
+      width: 2px;
+      height: 4px;
+    }
+
+    .signal-icon::after {
+      width: 2px;
+      height: 7px;
+    }
+
+    .signal-bar-1,
+    .signal-bar-2,
+    .signal-bar-3 {
+      width: 2px;
+      background: #ffffff;
+      border-radius: 1px;
+    }
+
+    .signal-bar-1 {
+      height: 3px;
+    }
+
+    .signal-bar-2 {
+      height: 5px;
+    }
+
+    .signal-bar-3 {
+      height: 7px;
+    }
+
+    /* WiFi Icon */
+    .wifi-icon {
+      width: 16px;
+      height: 12px;
+      position: relative;
+      display: inline-block;
+    }
+
+    .wifi-icon::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      width: 12px;
+      height: 12px;
+      border: 2px solid transparent;
+      border-top-color: #ffffff;
+      border-right-color: #ffffff;
+      border-radius: 0 100% 0 0;
+    }
+
+    .wifi-icon::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      width: 8px;
+      height: 8px;
+      border: 2px solid transparent;
+      border-top-color: #ffffff;
+      border-right-color: #ffffff;
+      border-radius: 0 100% 0 0;
+    }
+
+    /* Battery Icon */
+    .battery-icon {
+      width: 24px;
+      height: 12px;
+      position: relative;
+      display: inline-block;
+      border: 1.5px solid #ffffff;
+      border-radius: 2px;
+      background: transparent;
+    }
+
+    .battery-icon::before {
+      content: '';
+      position: absolute;
+      right: -3px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 2px;
+      height: 6px;
+      background: #ffffff;
+      border-radius: 0 1px 1px 0;
+    }
+
+    .battery-icon::after {
+      content: '';
+      position: absolute;
+      left: 2px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 7px;
+      background: #4cd964;
+      border-radius: 1px;
+      box-shadow: 0 0 2px rgba(76, 217, 100, 0.5);
+    }
+
+    .app-logo {
+      position: absolute;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90px;
+      height: 90px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .app-logo-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    .app-logo-text {
+      font-size: 52px;
+      font-weight: bold;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    .app-title {
+      position: absolute;
+      top: 155px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      z-index: 5;
+    }
+
+    .app-title-main {
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 2px;
+      line-height: 1.1;
+    }
+
+    .app-title-sub {
+      font-size: 32px;
+      font-weight: bold;
+      line-height: 1.1;
+    }
+
+    .download-btn {
+      position: absolute;
+      top: 230px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 260px;
+      height: 52px;
+      background: #e53935;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      cursor: pointer;
+      z-index: 5;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      padding: 0 25px;
+      text-decoration: none;
+      overflow: visible;
+    }
+
+    /* Animation Styles for Download Button */
+    
+    /* Pulse Glow - Default */
+    .download-btn.anim-pulse-glow::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(229, 57, 53, 0.5) 0%, rgba(229, 57, 53, 0) 70%);
+      border-radius: 30px;
+      z-index: -1;
+      animation: pulse-glow 2s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+      50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.2; }
+    }
+
+    /* Shimmer */
+    .download-btn.anim-shimmer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      animation: shimmer 2s infinite;
+      pointer-events: none;
+    }
+
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    /* Bounce */
+    .download-btn.anim-bounce {
+      animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-10px); }
+    }
+
+    /* Glow Pulse */
+    .download-btn.anim-glow-pulse {
+      animation: glow-pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes glow-pulse {
+      0%, 100% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(229, 57, 53, 0.5); }
+      50% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 40px rgba(229, 57, 53, 0.8); }
+    }
+
+    /* Ripple */
+    .download-btn.anim-ripple::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(229, 57, 53, 0.4);
+      transform: translate(-50%, -50%);
+      animation: ripple 2s infinite;
+      pointer-events: none;
+    }
+
+    @keyframes ripple {
+      0% { width: 0; height: 0; opacity: 1; }
+      100% { width: 300px; height: 300px; opacity: 0; }
+    }
+
+    /* Rotate Glow */
+    .download-btn.anim-rotate-glow::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 120%;
+      height: 120%;
+      background: conic-gradient(from 0deg, rgba(229, 57, 53, 0.3), rgba(255, 87, 34, 0.3), rgba(229, 57, 53, 0.3));
+      border-radius: 30px;
+      z-index: -1;
+      animation: rotate-glow 3s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes rotate-glow {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* Wave */
+    .download-btn.anim-wave::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, rgba(229, 57, 53, 0.3), rgba(255, 87, 34, 0.3));
+      border-radius: 30px;
+      z-index: -1;
+      animation: wave 2s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes wave {
+      0%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(1.1); }
+    }
+
+    /* Neon */
+    .download-btn.anim-neon {
+      animation: neon 1.5s ease-in-out infinite;
+    }
+
+    @keyframes neon {
+      0%, 100% { 
+        box-shadow: 0 0 5px rgba(229, 57, 53, 0.8), 0 0 10px rgba(229, 57, 53, 0.6), 0 0 15px rgba(229, 57, 53, 0.4);
+      }
+      50% { 
+        box-shadow: 0 0 10px rgba(229, 57, 53, 1), 0 0 20px rgba(229, 57, 53, 0.8), 0 0 30px rgba(229, 57, 53, 0.6);
+      }
+    }
+
+    /* Gradient Shift */
+    .download-btn.anim-gradient-shift {
+      background: linear-gradient(45deg, #e53935, #ff5722, #e53935);
+      background-size: 200% 200%;
+      animation: gradient-shift 3s ease infinite;
+    }
+
+    @keyframes gradient-shift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Float */
+    .download-btn.anim-float {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateX(-50%) translateY(0px); }
+      50% { transform: translateX(-50%) translateY(-15px); }
+    }
+
+    /* Scale Pulse */
+    .download-btn.anim-scale-pulse {
+      animation: scale-pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes scale-pulse {
+      0%, 100% { transform: translateX(-50%) scale(1); }
+      50% { transform: translateX(-50%) scale(1.05); }
+    }
+
+    /* Shadow Pulse */
+    .download-btn.anim-shadow-pulse {
+      animation: shadow-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes shadow-pulse {
+      0%, 100% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); }
+      50% { box-shadow: 0 8px 20px rgba(229, 57, 53, 0.6); }
+    }
+
+    /* Border Glow */
+    .download-btn.anim-border-glow {
+      animation: border-glow 2s ease-in-out infinite;
+      border: 2px solid transparent;
+    }
+
+    @keyframes border-glow {
+      0%, 100% { border-color: rgba(229, 57, 53, 0.3); }
+      50% { border-color: rgba(229, 57, 53, 1); }
+    }
+
+    /* Particles */
+    .download-btn.anim-particles::before,
+    .download-btn.anim-particles::after {
+      content: '';
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .download-btn.anim-particles::before {
+      top: 20%;
+      left: 20%;
+      animation: particles-1 2s infinite;
+    }
+
+    .download-btn.anim-particles::after {
+      top: 60%;
+      right: 20%;
+      animation: particles-2 2s infinite 0.5s;
+    }
+
+    @keyframes particles-1 {
+      0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+      50% { transform: translate(20px, -20px) scale(1.5); opacity: 0; }
+    }
+
+    @keyframes particles-2 {
+      0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+      50% { transform: translate(-20px, -20px) scale(1.5); opacity: 0; }
+    }
+
+    /* Rainbow */
+    .download-btn.anim-rainbow {
+      background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+      background-size: 400% 400%;
+      animation: rainbow 3s ease infinite;
+    }
+
+    @keyframes rainbow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Magnetic */
+    .download-btn.anim-magnetic {
+      transition: transform 0.3s ease;
+    }
+
+    .download-btn.anim-magnetic:hover {
+      transform: translateX(-50%) scale(1.1);
+    }
+
+    /* Shake */
+    .download-btn.anim-shake {
+      animation: shake 0.5s ease-in-out infinite;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(-50%) translateX(0); }
+      25% { transform: translateX(-50%) translateX(-5px); }
+      75% { transform: translateX(-50%) translateX(5px); }
+    }
+
+    /* Slide Glow */
+    .download-btn.anim-slide-glow::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+      animation: slide-glow 2s infinite;
+      pointer-events: none;
+    }
+
+    @keyframes slide-glow {
+      0% { left: -100%; }
+      100% { left: 150%; }
+    }
+
+    /* Double Pulse */
+    .download-btn.anim-double-pulse::before,
+    .download-btn.anim-double-pulse::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      border-radius: 30px;
+      background: rgba(229, 57, 53, 0.3);
+      transform: translate(-50%, -50%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .download-btn.anim-double-pulse::before {
+      animation: double-pulse-1 2s ease-in-out infinite;
+    }
+
+    .download-btn.anim-double-pulse::after {
+      animation: double-pulse-2 2s ease-in-out infinite 0.5s;
+    }
+
+    @keyframes double-pulse-1 {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+      50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
+    }
+
+    @keyframes double-pulse-2 {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.4; }
+      50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0; }
+    }
+
+    /* Breathing */
+    .download-btn.anim-breathing {
+      animation: breathing 3s ease-in-out infinite;
+    }
+
+    @keyframes breathing {
+      0%, 100% { transform: translateX(-50%) scale(1); }
+      50% { transform: translateX(-50%) scale(1.08); }
+    }
+
+    /* Sparkle */
+    .download-btn.anim-sparkle::before {
+      content: '✨';
+      position: absolute;
+      top: -10px;
+      left: 20%;
+      font-size: 20px;
+      animation: sparkle 2s infinite;
+      pointer-events: none;
+    }
+
+    .download-btn.anim-sparkle::after {
+      content: '✨';
+      position: absolute;
+      top: -10px;
+      right: 20%;
+      font-size: 20px;
+      animation: sparkle 2s infinite 1s;
+      pointer-events: none;
+    }
+
+    @keyframes sparkle {
+      0%, 100% { opacity: 0; transform: translateY(0) scale(0.5); }
+      50% { opacity: 1; transform: translateY(-20px) scale(1); }
+    }
+
+    /* Fire */
+    .download-btn.anim-fire::before {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 20px;
+      background: linear-gradient(to top, rgba(255, 87, 34, 0.8), rgba(255, 152, 0, 0.4), transparent);
+      border-radius: 50%;
+      animation: fire 1s ease-in-out infinite;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    @keyframes fire {
+      0%, 100% { transform: translateX(-50%) scaleX(1); opacity: 0.8; }
+      50% { transform: translateX(-50%) scaleX(1.2); opacity: 0.6; }
+    }
+
+    .download-btn-text {
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .download-icon {
+      width: 32px;
+      height: 32px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .download-arrow {
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 8px solid #e53935;
+    }
+
+    .favorite-section {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 180px;
+      background: #ffffff;
+      padding: 12px 15px;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .favorite-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .favorite-title {
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .favorite-thumbnails {
+      display: flex;
+      gap: 6px;
+      justify-content: space-between;
+      flex: 1;
+    }
+
+    .thumbnail-item {
+      flex: 1;
+      height: 100%;
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+      background: #f0f0f0;
+      min-width: 0;
+    }
+
+    .thumbnail-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .free-banner {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #e53935;
+      color: white;
+      text-align: center;
+      padding: 4px 0;
+      font-size: 13px;
+      font-weight: bold;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="template-wrapper">
+    <!-- INPUT PANEL -->
+    <div class="input-panel">
+      <h2>Template 6 - App Download Ad</h2>
+
+      <div class="section-title">📱 App Information</div>
+      <div class="input-group">
+        <label>App Logo Text (Single Character)</label>
+        <input type="text" data-field="appLogoText" maxlength="1" value="V">
+      </div>
+
+      <div class="input-group">
+        <label>App Logo Image (Optional)</label>
+        <input type="file" data-field="appLogoImage" accept="image/*">
+      </div>
+
+      <div class="input-group">
+        <label>App Title (Main)</label>
+        <input type="text" data-field="appTitleMain" value="HD Video">
+      </div>
+
+      <div class="input-group">
+        <label>App Title (Subtitle)</label>
+        <input type="text" data-field="appTitleSub" value="Downloader">
+      </div>
+
+      <div class="section-title">🎨 Colors</div>
+      <div class="input-group">
+        <label>App Logo Background Color</label>
+        <input type="color" data-field="appLogoBg" value="#ff6b35">
+      </div>
+
+      <div class="input-group">
+        <label>App Title Main Color</label>
+        <input type="color" data-field="appTitleMainColor" value="#000000">
+      </div>
+
+      <div class="input-group">
+        <label>App Title Sub Color</label>
+        <input type="color" data-field="appTitleSubColor" value="#e53935">
+      </div>
+
+      <div class="input-group">
+        <label>Download Button Color</label>
+        <input type="color" data-field="downloadBtnBg" value="#e53935">
+      </div>
+
+      <div class="input-group">
+        <label>Download Button Animation</label>
+        <select data-field="downloadBtnAnimation" id="downloadBtnAnimationSelect" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; cursor: pointer;">
+          <option value="none">No Animation</option>
+          <option value="pulse-glow" selected>Pulse Glow</option>
+          <option value="shimmer">Shimmer</option>
+          <option value="bounce">Bounce</option>
+          <option value="glow-pulse">Glow Pulse</option>
+          <option value="ripple">Ripple Effect</option>
+          <option value="rotate-glow">Rotate Glow</option>
+          <option value="wave">Wave</option>
+          <option value="neon">Neon Glow</option>
+          <option value="gradient-shift">Gradient Shift</option>
+          <option value="float">Float</option>
+          <option value="scale-pulse">Scale Pulse</option>
+          <option value="shadow-pulse">Shadow Pulse</option>
+          <option value="border-glow">Border Glow</option>
+          <option value="particles">Particles</option>
+          <option value="rainbow">Rainbow</option>
+          <option value="magnetic">Magnetic</option>
+          <option value="shake">Shake</option>
+          <option value="slide-glow">Slide Glow</option>
+          <option value="double-pulse">Double Pulse</option>
+          <option value="breathing">Breathing</option>
+          <option value="sparkle">Sparkle</option>
+          <option value="fire">Fire</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Favorite Title Color</label>
+        <input type="color" data-field="favoriteTitleColor" value="#000000">
+      </div>
+
+      <div class="input-group">
+        <label>Free Banner Color</label>
+        <input type="color" data-field="freeBannerBg" value="#e53935">
+      </div>
+
+      <div class="section-title">🖼️ Images</div>
+      <div class="input-group">
+        <label>Background Image</label>
+        <input type="file" data-field="backgroundImage" accept="image/*">
+      </div>
+
+      <div class="input-group">
+        <label>Thumbnail 1 Image</label>
+        <input type="file" data-field="thumbnail1" accept="image/*">
+      </div>
+
+      <div class="input-group">
+        <label>Thumbnail 2 Image</label>
+        <input type="file" data-field="thumbnail2" accept="image/*">
+      </div>
+
+      <div class="input-group">
+        <label>Thumbnail 3 Image</label>
+        <input type="file" data-field="thumbnail3" accept="image/*">
+      </div>
+
+      <div class="section-title">🔗 Links</div>
+      <div class="input-group">
+        <label>Download Button Link</label>
+        <input type="text" data-field="downloadLink" value="https://example.com/download">
+      </div>
+
+      <div class="section-title">📝 Text Content</div>
+      <div class="input-group">
+        <label>Favorite Section Title</label>
+        <input type="text" data-field="favoriteTitle" value="Favorite">
+      </div>
+
+      <div class="input-group">
+        <label>Free Banner Text</label>
+        <input type="text" data-field="freeBannerText" value="Free!">
+      </div>
+
+      <div class="input-group">
+        <label>Download Button Text</label>
+        <input type="text" data-field="downloadBtnText" value="DOWNLOAD">
+      </div>
+
+      <div class="input-group">
+        <label>Status Bar Time</label>
+        <input type="text" data-field="statusTime" value="9:27">
+      </div>
+    </div>
+
+    <!-- PREVIEW PANEL -->
+    <div class="preview-panel" id="templateContainer">
+      <div class="app-ad-container">
+        <!-- Background Image -->
+        <div class="ad-background" data-field="backgroundImage"></div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+          <span class="status-time" data-field="statusTime">9:27</span>
+          <div class="status-icons">
+            <span class="status-icon signal-icon" title="Signal Strength">
+              <span class="signal-bar-1"></span>
+              <span class="signal-bar-2"></span>
+              <span class="signal-bar-3"></span>
+            </span>
+            <span class="status-icon wifi-icon" title="WiFi"></span>
+            <span class="status-icon battery-icon" title="Battery"></span>
+          </div>
+        </div>
+
+        <!-- App Logo -->
+        <div class="app-logo" data-field="appLogoBg">
+          <img class="app-logo-image" data-field="appLogoImage" alt="App Logo">
+          <div class="app-logo-text" data-field="appLogoText">V</div>
+        </div>
+
+        <!-- App Title -->
+        <div class="app-title">
+          <div class="app-title-main" data-field="appTitleMain" data-field-color="appTitleMainColor">HD Video</div>
+          <div class="app-title-sub" data-field="appTitleSub" data-field-color="appTitleSubColor">Downloader</div>
+        </div>
+
+        <!-- Download Button -->
+        <a href="https://example.com/download" class="download-btn anim-pulse-glow" data-field="downloadBtnBg" data-field-link="downloadLink" data-field-animation="downloadBtnAnimation" target="_blank">
+          <div class="download-btn-text" data-field="downloadBtnText">DOWNLOAD</div>
+          <div class="download-icon">
+            <div class="download-arrow"></div>
+          </div>
+        </a>
+
+        <!-- Favorite Section -->
+        <div class="favorite-section">
+          <div class="favorite-header">
+            <div class="favorite-title" data-field="favoriteTitle" data-field-color="favoriteTitleColor">Favorite</div>
+          </div>
+          <div class="favorite-thumbnails">
+            <div class="thumbnail-item">
+              <img src="https://via.placeholder.com/100x140/34495e/ffffff?text=1" alt="Thumbnail 1" class="thumbnail-image" data-field="thumbnail1">
+              <div class="free-banner" data-field="freeBannerBg">
+                <span data-field="freeBannerText">Free!</span>
+              </div>
+            </div>
+            <div class="thumbnail-item">
+              <img src="https://via.placeholder.com/100x140/2c3e50/ffffff?text=2" alt="Thumbnail 2" class="thumbnail-image" data-field="thumbnail2">
+              <div class="free-banner" data-field="freeBannerBg">
+                <span data-field="freeBannerText">Free!</span>
+              </div>
+            </div>
+            <div class="thumbnail-item">
+              <img src="https://via.placeholder.com/100x140/16a085/ffffff?text=3" alt="Thumbnail 3" class="thumbnail-image" data-field="thumbnail3">
+              <div class="free-banner" data-field="freeBannerBg">
+                <span data-field="freeBannerText">Free!</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Handle download button animation selection - Backup handler
+    // Main handler is in TemplateEngine.updatePreview, but this ensures it works immediately
+    (function() {
+      function updateDownloadButtonAnimation() {
+        var animationSelect = document.getElementById('downloadBtnAnimationSelect');
+        var downloadBtn = document.querySelector('.download-btn');
+        
+        if (!animationSelect || !downloadBtn) return;
+
+        function applyAnimation() {
+          var selectedAnimation = animationSelect.value;
+          
+          // Use FieldHandler for consistent behavior
+          FieldHandler.updateAnimation(downloadBtn, selectedAnimation, 'downloadBtnAnimation');
+        }
+
+        // Update on change - ensure it triggers TemplateEngine.updatePreview too
+        animationSelect.addEventListener('change', function() {
+          var selectedValue = this.value;
+          // Trigger TemplateEngine update
+          if (typeof TemplateEngine !== 'undefined') {
+            TemplateEngine.updatePreview('downloadBtnAnimation', selectedValue);
+          }
+          // Also apply directly as backup
+          applyAnimation();
+        });
+        
+        // Initial application
+        setTimeout(applyAnimation, 100);
+      }
+
+      // Wait for DOM to be ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', updateDownloadButtonAnimation);
+      } else {
+        updateDownloadButtonAnimation();
+      }
+
+      // Also update when template loads (for template engine)
+      setTimeout(updateDownloadButtonAnimation, 1000);
+    })();
+  </script>
+</body>
+
+</html>

@@ -753,15 +753,24 @@ var ExportFunctions = {
       var elements = clone.querySelectorAll('[data-field="' + fieldName + '"]');
       
       // Also find elements with data-field-* attributes (for child element targeting)
-      // Handle data-field-color, data-field-size, data-field-top, data-field-right, data-field-height, data-field-link
+      // Handle data-field-color, data-field-size, data-field-top, data-field-right, data-field-height, data-field-link, data-field-animation
       var attrSelectors = [
         '[data-field-color="' + fieldName + '"]',
         '[data-field-size="' + fieldName + '"]',
         '[data-field-top="' + fieldName + '"]',
         '[data-field-right="' + fieldName + '"]',
         '[data-field-height="' + fieldName + '"]',
-        '[data-field-link="' + fieldName + '"]'
+        '[data-field-link="' + fieldName + '"]',
+        '[data-field-animation="' + fieldName + '"]'
       ];
+      
+      // Handle animation fields specially
+      if (fieldName.includes('Animation') || fieldName.includes('animation')) {
+        var animationElements = clone.querySelectorAll('[data-field-animation="' + fieldName + '"]');
+        animationElements.forEach(function(element) {
+          FieldHandler.updateAnimation(element, value, fieldName);
+        });
+      }
       
       // Handle link fields specially
       if (fieldName.includes('Link') || fieldName.includes('link') || fieldName === 'playButtonLink') {
@@ -2030,8 +2039,11 @@ var ExportFunctions = {
         canvas.height = height || 480;
         var ctx = canvas.getContext('2d');
         
+        // Reduced FPS for faster export (15 FPS is still smooth for ads)
+        var fps = 15;
+        
         // Create a video stream from canvas
-        var videoStream = canvas.captureStream(30); // 30 FPS
+        var videoStream = canvas.captureStream(fps);
         
         // Create audio stream from audio file
         // We need to create a MediaStreamAudioSourceNode and connect it to a MediaStreamAudioDestinationNode
@@ -2115,8 +2127,9 @@ var ExportFunctions = {
         };
         
         // Capture animated frames continuously using html2canvas
-        var frameInterval = 1000 / 30; // ~33ms per frame (30 FPS)
-        var totalFrames = Math.ceil(duration * 30);
+        // fps is already defined above (15 FPS for faster export)
+        var frameInterval = 1000 / fps; // ~67ms per frame (15 FPS)
+        var totalFrames = Math.ceil(duration * fps);
         var frameCount = 0;
         var recordingStarted = false;
         
