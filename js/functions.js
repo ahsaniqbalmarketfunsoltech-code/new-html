@@ -139,7 +139,12 @@ var ExportFunctions = {
         return text;
       }
       
-      console.log('Translating: "' + text + '" from ' + (sourceLang || 'en') + ' to ' + targetLang);
+      // Ensure sourceLang is set (use selected source language)
+      if (!sourceLang) {
+        sourceLang = TemplateEngine.getSourceLanguage();
+      }
+      
+      console.log('Translating: "' + text + '" from ' + sourceLang + ' to ' + targetLang);
       
       // Use Google Translate web API (works reliably from browser without CORS issues)
       // This is the unofficial API that Google Translate web interface uses
@@ -243,7 +248,14 @@ var ExportFunctions = {
     var translationErrors = [];
     var translationWarnings = [];
     
-    console.log('Starting translation to ' + targetLang);
+    // Ensure sourceLang is set (use selected source language)
+    if (!sourceLang) {
+      sourceLang = TemplateEngine.getSourceLanguage();
+    }
+    
+    console.log('Starting translation from ' + sourceLang + ' to ' + targetLang);
+    console.log('Source language:', sourceLang);
+    console.log('Target language:', targetLang);
     console.log('Field values to translate:', fieldValues);
     
     for (var field in fieldValues) {
@@ -901,7 +913,23 @@ var ExportFunctions = {
   },
   
   /**
+   * Convert blob to data URL
+   */
+  blobToDataURL: function(blob) {
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onloadend = function() {
+        resolve(reader.result);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  },
+  
+  /**
    * Extract assets from DOM element
+   * IMPORTANT: Keeps images as data URLs in HTML for standalone viewing
+   * Also extracts them as separate files for ZIP packaging
    */
   extractAssetsFromDOM: async function(element) {
     var assets = {};
@@ -923,14 +951,28 @@ var ExportFunctions = {
           if (blob.type && blob.type.startsWith('image/')) {
             var extension = blob.type.split('/')[1] || 'png';
             var filename = 'image_' + assetIndex + '.' + extension;
+            
+            // Store blob for ZIP file
             assets[filename] = blob;
-            img.setAttribute('src', filename);
+            
+            // Convert blob to data URL and keep it in HTML (for standalone viewing)
+            // This prevents 404 errors when viewing HTML directly
+            try {
+              var dataURL = await this.blobToDataURL(blob);
+              img.setAttribute('src', dataURL);
+              img.src = dataURL; // Also set src property
+            } catch (dataURLError) {
+              // If conversion fails, use relative path (for ZIP)
+              img.setAttribute('src', filename);
+            }
+            
             assetIndex++;
           } else {
             console.warn('Skipping non-image file:', blob.type, 'for image:', src.substring(0, 50));
           }
         } catch (error) {
           console.error('Error extracting image:', error);
+          // Keep original src if extraction fails
         }
       } else if (src && src.startsWith('http')) {
         try {
@@ -943,7 +985,16 @@ var ExportFunctions = {
               var extension = blob.type.split('/')[1] || 'png';
               var filename = 'image_' + assetIndex + '.' + extension;
               assets[filename] = blob;
-              img.setAttribute('src', filename);
+              
+              // Convert to data URL for HTML
+              try {
+                var dataURL = await this.blobToDataURL(blob);
+                img.setAttribute('src', dataURL);
+                img.src = dataURL;
+              } catch (dataURLError) {
+                img.setAttribute('src', filename);
+              }
+              
               assetIndex++;
             } else {
               console.warn('Skipping non-image file:', blob.type, 'for URL:', src);
@@ -978,8 +1029,15 @@ var ExportFunctions = {
                 var filename = 'image_' + assetIndex + '.' + extension;
                 assets[filename] = blob;
                 
-                // Update background-image to use relative filename
-                el.style.backgroundImage = 'url(' + filename + ')';
+                // Convert to data URL and keep in HTML
+                try {
+                  var dataURL = await this.blobToDataURL(blob);
+                  el.style.backgroundImage = 'url(' + dataURL + ')';
+                } catch (dataURLError) {
+                  // Fallback to relative path
+                  el.style.backgroundImage = 'url(' + filename + ')';
+                }
+                
                 assetIndex++;
               }
             }
