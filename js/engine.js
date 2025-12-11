@@ -932,6 +932,17 @@ var TemplateEngine = {
   },
   
   /**
+   * Get selected source language
+   */
+  getSourceLanguage: function() {
+    var sourceSelect = document.getElementById('sourceLanguageSelect');
+    if (sourceSelect && sourceSelect.value) {
+      return sourceSelect.value;
+    }
+    return 'en'; // Default to English if not found
+  },
+  
+  /**
    * Get selected languages
    */
   getSelectedLanguages: function() {
