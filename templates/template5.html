@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,7 +31,7 @@
       border-radius: 12px;
       max-width: 420px;
       height: fit-content;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       overflow-y: auto;
       max-height: calc(100vh - 40px);
     }
@@ -114,7 +115,7 @@
       align-items: center;
       justify-content: center;
       min-height: 600px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       position: sticky;
       top: 20px;
       align-self: flex-start;
@@ -136,11 +137,18 @@
     /* AD STYLES - Exact Match to Reference */
     .video-ad-container {
       width: 320px;
+      height: 480px;
+      max-width: 320px;
+      max-height: 480px;
+      min-width: 320px;
+      min-height: 480px;
       background: #000;
       overflow: hidden;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
       position: relative;
       border-radius: 0;
+      display: flex;
+      flex-direction: column;
     }
 
     /* Top Header Section - Black Background */
@@ -148,6 +156,8 @@
       background: #000000;
       padding: 12px 15px;
       text-align: center;
+      flex-shrink: 0;
+      flex-grow: 0;
     }
 
     .header-main {
@@ -169,6 +179,8 @@
       background: #2c5f8d;
       padding: 10px 15px;
       text-align: center;
+      flex-shrink: 0;
+      flex-grow: 0;
     }
 
     .subtitle-text {
@@ -182,11 +194,13 @@
       position: relative;
       background-size: cover;
       background-position: center;
-      height: 400px;
+      flex: 1 1 0;
+      min-height: 0;
       display: flex;
       align-items: center;
       justify-content: center;
       background-color: #1a1a1a;
+      overflow: hidden;
     }
 
     .video-overlay {
@@ -195,7 +209,9 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,0.25);
+      background: rgba(0, 0, 0, 0.25);
+      z-index: 1;
+      pointer-events: none;
     }
 
     .watermark {
@@ -205,48 +221,169 @@
       color: white;
       font-size: 16px;
       font-weight: 600;
-      z-index: 3;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+      z-index: 5;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     }
 
     .play-controls {
       position: relative;
-      z-index: 2;
-      display: flex;
+      z-index: 10;
+      display: flex !important;
       flex-direction: row;
       align-items: center;
       gap: 20px;
+      visibility: visible !important;
+      opacity: 1 !important;
     }
 
     .control-btn {
       width: 50px;
       height: 50px;
-      background: rgba(255,255,255,0.95);
+      background: rgba(255, 255, 255, 0.95);
       border-radius: 50%;
       display: flex;
       align-items: center;
-      justify-items: center;
       justify-content: center;
       font-size: 11px;
       font-weight: 700;
       color: #000;
       cursor: pointer;
       flex-direction: column;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
+      position: relative;
+      z-index: 11;
+      border: none;
+      padding: 0;
+      font-family: inherit;
+    }
+
+    .control-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      background: rgba(255, 255, 255, 1);
+    }
+
+    .control-btn:active {
+      transform: scale(0.95);
+      background: rgba(240, 240, 240, 0.95);
+    }
+
+    .control-btn:focus {
+      outline: 2px solid rgba(255, 255, 255, 0.8);
+      outline-offset: 2px;
+    }
+
+    .control-btn-icon {
+      font-size: 18px;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+
+    .control-btn-text {
+      font-size: 10px;
+      font-weight: 700;
+      margin-top: 2px;
     }
 
     .control-btn-left {
       transform: scaleX(-1);
     }
 
+    /* Remove Image Button */
+    .remove-image-btn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(220, 53, 69, 0.95);
+      color: white;
+      border: none;
+      border-radius: 25px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      z-index: 10;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .remove-image-btn:hover {
+      background: rgba(220, 53, 69, 1);
+      transform: scale(1.08);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+    }
+
+    .remove-image-btn:active {
+      transform: scale(0.95);
+    }
+
+    .remove-image-btn.show {
+      display: flex;
+    }
+
+
     .play-button {
       width: 85px;
       height: 85px;
-      background: rgba(255,255,255,0.95);
+      background: rgba(255, 255, 255, 0.95);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      position: relative;
+      z-index: 11;
+      transition: transform 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .play-button:hover {
+      transform: scale(1.1);
+    }
+
+    .play-button:active {
+      transform: scale(0.95);
+    }
+
+    /* Wave Animation */
+    .play-button::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      animation: wave 2s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .play-button::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      animation: wave 2s ease-in-out infinite 0.5s;
+      pointer-events: none;
+    }
+
+    @keyframes wave {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(1.5);
+        opacity: 0;
+      }
     }
 
     .play-icon {
@@ -256,6 +393,8 @@
       border-top: 13px solid transparent;
       border-bottom: 13px solid transparent;
       margin-left: 6px;
+      position: relative;
+      z-index: 1;
     }
 
     /* Bottom Footer Section - Red Banner */
@@ -263,15 +402,22 @@
       background: #8b2e2e;
       padding: 18px 15px;
       text-align: center;
+      flex-shrink: 0;
+      flex-grow: 0;
+      min-height: fit-content;
     }
 
     .footer-text {
       font-size: 22px;
       font-weight: 700;
       color: #ffffff;
+      display: block;
+      visibility: visible;
+      opacity: 1;
     }
   </style>
 </head>
+
 <body>
   <div class="template-wrapper">
     <!-- LEFT PANEL: Input Controls -->
@@ -407,11 +553,17 @@
 
       <div class="input-group">
         <label>Upload Video Thumbnail Image</label>
-        <input type="file" data-field="thumbnail" accept="image/*">
+        <input type="file" data-field="thumbnail" accept="image/*" id="thumbnailInput">
         <div class="helper-text">Recommended: 320x360px or similar aspect ratio</div>
       </div>
 
       <div class="section-title">🎮 Player Controls</div>
+
+      <div class="input-group">
+        <label>Play Button Link (URL)</label>
+        <input type="text" data-field="playButtonLink" value="https://example.com" placeholder="https://example.com">
+        <div class="helper-text">Clicking play button will open this link</div>
+      </div>
 
       <div class="input-group">
         <label>Rewind Seconds</label>
@@ -468,43 +620,58 @@
       <div class="video-ad-container" data-field="adWidth">
         <!-- Header Section -->
         <div class="ad-header" data-field="headerBg">
-          <div class="header-main" data-field="headerMain">एशियाई फ़िल्में</div>
-          <div class="header-sub" data-field="headerSub">+2000 फ़िल्में</div>
+          <div class="header-main" data-field="headerMain" data-field-color="headerColor"
+            data-field-size="headerMainSize">एशियाई फ़िल्में</div>
+          <div class="header-sub" data-field="headerSub" data-field-color="headerColor" data-field-size="headerSubSize">
+            +2000 फ़िल्में</div>
         </div>
 
         <!-- Subtitle Section -->
         <div class="ad-subtitle" data-field="subtitleBg">
-          <div class="subtitle-text" data-field="subtitle">टीचर से अफेयर</div>
+          <div class="subtitle-text" data-field="subtitle" data-field-color="subtitleColor"
+            data-field-size="subtitleSize">टीचर से अफेयर</div>
         </div>
 
         <!-- Video/Thumbnail Section -->
-        <div class="video-section" data-field="thumbnail" data-height="videoHeight">
+        <div class="video-section" data-field="thumbnail" data-field-height="videoHeight">
           <div class="video-overlay"></div>
-          
-          <div class="watermark" data-field="watermark" data-top="watermarkTop" data-right="watermarkRight" data-size="watermarkSize">Rajtelef</div>
+
+          <div class="watermark" data-field="watermark" data-field-top="watermarkTop" data-field-right="watermarkRight"
+            data-field-size="watermarkSize">Rajtelef</div>
+
+          <button type="button" class="remove-image-btn" id="removeThumbnailPreviewBtn"
+            onclick="TemplateEngine.removeThumbnailImage()">
+            <span>🗑️</span>
+            <span>Remove</span>
+          </button>
 
           <div class="play-controls">
-            <div class="control-btn" data-size="controlButtonSize">
-              <span class="control-btn-left">⏩</span>
-              <span data-field="rewindSeconds">10</span>
-            </div>
-            <div class="play-button" data-size="playButtonSize">
+            <button type="button" class="control-btn" data-field-size="controlButtonSize" id="rewindBtn"
+              onclick="TemplateEngine.handleRewind();">
+              <div class="control-btn-icon">⏮</div>
+              <div class="control-btn-text" data-field="rewindSeconds">10s</div>
+            </button>
+            <a href="#" class="play-button" data-field-size="playButtonSize" data-field-link="playButtonLink"
+              target="_blank"
+              onclick="event.preventDefault(); var link = this.getAttribute('href'); if(link && link !== '#' && link !== 'https://example.com') window.open(link, '_blank'); return false;">
               <div class="play-icon"></div>
-            </div>
-            <div class="control-btn" data-size="controlButtonSize">
-              <span data-field="forwardSeconds">10</span>
-              <span>⏩</span>
-            </div>
+            </a>
+            <button type="button" class="control-btn" data-field-size="controlButtonSize" id="forwardBtn"
+              onclick="TemplateEngine.handleForward();">
+              <div class="control-btn-text" data-field="forwardSeconds">10s</div>
+              <div class="control-btn-icon">⏭</div>
+            </button>
           </div>
         </div>
 
         <!-- Footer Section -->
         <div class="ad-footer" data-field="footerBg">
-          <div class="footer-text" data-field="footer">बिल्कुल मुफ्त</div>
+          <div class="footer-text" data-field="footer" data-field-color="footerColor" data-field-size="footerSize">
+            बिल्कुल मुफ्त</div>
         </div>
       </div>
     </div>
   </div>
 </body>
-</html>
 
+</html>

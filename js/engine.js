@@ -13,96 +13,96 @@ var TemplateEngine = {
   templateData: {},
   audioFile: null,
   languageDropdownInitialized: false,
-  templateList: ['template1', 'template2', 'template3','template4'], // Auto-update: Add new template names here (without .html)
-  
+  templateList: ['template1', 'template2', 'template3', 'template4'], // Auto-update: Add new template names here (without .html)
+
   /**
    * Initialize the template engine
    */
-  init: function() {
+  init: function () {
     this.loadTemplates();
     this.setupEventListeners();
     // Initialize dropdown after a delay to ensure DOM is ready
     // Use longer delay to ensure shared panel elements are available
-    setTimeout(function() {
+    setTimeout(function () {
       TemplateEngine.initializeLanguageDropdown();
     }, 800);
   },
-  
+
   /**
    * Load available templates - automatically discovers templates in /templates/ folder
    * Falls back to hardcoded list if auto-discovery fails
    */
-  loadTemplates: function() {
+  loadTemplates: function () {
     // Try to auto-discover templates by attempting to fetch them
     // Start with known templates and check if they exist
     var self = this;
     var discoveredTemplates = [];
     var checkPromises = [];
-    
+
     // Check templates from hardcoded list first
-    this.templateList.forEach(function(templateName) {
+    this.templateList.forEach(function (templateName) {
       var checkPromise = fetch('templates/' + templateName + '.html', { method: 'HEAD' })
-        .then(function(response) {
+        .then(function (response) {
           if (response.ok) {
             return templateName;
           }
           return null;
         })
-        .catch(function() {
+        .catch(function () {
           return null;
         });
       checkPromises.push(checkPromise);
     });
-    
+
     // Also try to discover additional templates (template4, template5, etc.)
     for (var i = 4; i <= 20; i++) {
-      (function(templateName) {
+      (function (templateName) {
         var checkPromise = fetch('templates/' + templateName + '.html', { method: 'HEAD' })
-          .then(function(response) {
+          .then(function (response) {
             if (response.ok) {
               return templateName;
             }
             return null;
           })
-          .catch(function() {
+          .catch(function () {
             return null;
           });
         checkPromises.push(checkPromise);
       })('template' + i);
     }
-    
-    Promise.all(checkPromises).then(function(results) {
-      discoveredTemplates = results.filter(function(t) { return t !== null; });
-      
+
+    Promise.all(checkPromises).then(function (results) {
+      discoveredTemplates = results.filter(function (t) { return t !== null; });
+
       // If no templates discovered, use hardcoded list
       if (discoveredTemplates.length === 0) {
         discoveredTemplates = self.templateList;
       }
-      
+
       // Sort templates naturally (template1, template2, template10, not template1, template10, template2)
-      discoveredTemplates.sort(function(a, b) {
+      discoveredTemplates.sort(function (a, b) {
         var numA = parseInt(a.replace(/template/i, '')) || 0;
         var numB = parseInt(b.replace(/template/i, '')) || 0;
         return numA - numB;
       });
-      
+
       self.populateTemplateDropdown(discoveredTemplates);
-    }).catch(function(error) {
+    }).catch(function (error) {
       console.warn('Template auto-discovery failed, using hardcoded list:', error);
       self.populateTemplateDropdown(self.templateList);
     });
   },
-  
+
   /**
    * Populate template dropdown
    */
-  populateTemplateDropdown: function(templates) {
+  populateTemplateDropdown: function (templates) {
     var select = document.getElementById('templateSelect');
     if (!select) return;
-    
+
     select.innerHTML = '<option value="">-- Select a Template --</option>';
-    
-    templates.forEach(function(template) {
+
+    templates.forEach(function (template) {
       var option = document.createElement('option');
       option.value = template;
       // Format display name: template1 -> Template 1, template2 -> Template 2
@@ -111,20 +111,20 @@ var TemplateEngine = {
       select.appendChild(option);
     });
   },
-  
+
   /**
    * Setup event listeners
    */
-  setupEventListeners: function() {
+  setupEventListeners: function () {
     var select = document.getElementById('templateSelect');
     if (select) {
       select.addEventListener('change', this.handleTemplateChange.bind(this));
     }
-    
+
     // Export button listeners
     var zipBtn = document.getElementById('downloadZipBtn');
     if (zipBtn) {
-      zipBtn.addEventListener('click', function() {
+      zipBtn.addEventListener('click', function () {
         // Show time estimate before starting
         var languages = TemplateEngine.getSelectedLanguages();
         if (languages.length > 0 && typeof ExportFunctions !== 'undefined' && ExportFunctions.calculateTimeEstimate) {
@@ -139,10 +139,10 @@ var TemplateEngine = {
         TemplateEngine.downloadZip();
       });
     }
-    
+
     var imagesBtn = document.getElementById('downloadImagesBtn');
     if (imagesBtn) {
-      imagesBtn.addEventListener('click', function() {
+      imagesBtn.addEventListener('click', function () {
         // Show time estimate before starting
         var languages = TemplateEngine.getSelectedLanguages();
         if (languages.length > 0 && typeof ExportFunctions !== 'undefined' && ExportFunctions.calculateImagesTimeEstimate) {
@@ -157,18 +157,18 @@ var TemplateEngine = {
         TemplateEngine.downloadImages();
       });
     }
-    
+
     var videoBtn = document.getElementById('downloadVideoBtn');
     if (videoBtn) {
-      videoBtn.addEventListener('click', function() {
+      videoBtn.addEventListener('click', function () {
         // Show time estimate before starting (if audio is loaded)
         if (TemplateEngine.audioFile && typeof ExportFunctions !== 'undefined' && ExportFunctions.calculateVideoTimeEstimate) {
           // Get audio duration for estimation
           var audioFile = TemplateEngine.audioFile;
           var reader = new FileReader();
-          reader.onload = function(e) {
+          reader.onload = function (e) {
             var audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            audioContext.decodeAudioData(e.target.result).then(function(decodedAudio) {
+            audioContext.decodeAudioData(e.target.result).then(function (decodedAudio) {
               var languages = TemplateEngine.getSelectedLanguages();
               if (languages.length > 0) {
                 var estimatedTime = ExportFunctions.calculateVideoTimeEstimate(languages, decodedAudio.duration);
@@ -181,7 +181,7 @@ var TemplateEngine = {
                   timeEstimateValue.textContent = timeText;
                 }
               }
-            }).catch(function(err) {
+            }).catch(function (err) {
               console.warn('Could not decode audio for time estimate:', err);
             });
           };
@@ -190,21 +190,21 @@ var TemplateEngine = {
         TemplateEngine.downloadVideo();
       });
     }
-    
+
     // Blur intensity control with live preview
     var blurIntensitySlider = document.getElementById('blurIntensity');
     var blurValueDisplay = document.getElementById('blurValue');
     if (blurIntensitySlider && blurValueDisplay) {
-      blurIntensitySlider.addEventListener('input', function() {
+      blurIntensitySlider.addEventListener('input', function () {
         blurValueDisplay.textContent = this.value;
         // Update live preview
         if (typeof TemplateEngine !== 'undefined') {
           TemplateEngine.updateBlurPreview(parseInt(this.value));
         }
       });
-      
+
       // Initialize preview on load (wait for ExportFunctions to be available)
-      var initPreview = function() {
+      var initPreview = function () {
         if (typeof TemplateEngine !== 'undefined' && typeof ExportFunctions !== 'undefined' && ExportFunctions.createBlurredAdBackground) {
           TemplateEngine.updateBlurPreview(parseInt(blurIntensitySlider.value));
         } else {
@@ -214,11 +214,11 @@ var TemplateEngine = {
       setTimeout(initPreview, 500);
     }
   },
-  
+
   /**
    * Handle template selection change
    */
-  handleTemplateChange: function(event) {
+  handleTemplateChange: function (event) {
     var templateName = event.target.value;
     if (!templateName) {
       var container = document.getElementById('templateContainer');
@@ -234,42 +234,42 @@ var TemplateEngine = {
       this.audioFile = null;
       return;
     }
-    
+
     // Always load template, even if switching between templates
     this.loadTemplate(templateName);
   },
-  
+
   /**
    * Load template content dynamically using fetch
    */
-  loadTemplate: function(templateName) {
+  loadTemplate: function (templateName) {
     var container = document.getElementById('templateContainer');
     var sharedPanel = document.getElementById('sharedPanel');
-    
+
     if (!container) return;
-    
+
     // Clear container and recreate loading element
     container.innerHTML = '<div class="loading active" id="loading"><div class="spinner"></div><p>Loading template...</p></div>';
-    
+
     this.currentTemplate = templateName;
     this.templateData = {};
     this.audioFile = null;
-    
+
     // Hide video button initially
     var videoBtn = document.getElementById('downloadVideoBtn');
     if (videoBtn) {
       videoBtn.style.display = 'none';
     }
-    
+
     // Fetch template content
     fetch('templates/' + templateName + '.html')
-      .then(function(response) {
+      .then(function (response) {
         if (!response.ok) {
           throw new Error('Template not found: ' + templateName);
         }
         return response.text();
       })
-      .then(function(htmlContent) {
+      .then(function (htmlContent) {
         var loading = document.getElementById('loading');
         if (loading) {
           loading.classList.remove('active');
@@ -278,16 +278,16 @@ var TemplateEngine = {
         if (sharedPanel) {
           sharedPanel.style.display = 'block';
         }
-        
+
         // Initialize binding after template loads
         TemplateEngine.initializeBinding();
-        
+
         // Update language dropdown text (dropdown is already initialized on page load)
-        setTimeout(function() {
+        setTimeout(function () {
           TemplateEngine.updateLanguageDropdownText();
         }, 100);
       })
-      .catch(function(error) {
+      .catch(function (error) {
         console.error('Error loading template:', error);
         var loading = document.getElementById('loading');
         if (loading) {
@@ -296,113 +296,221 @@ var TemplateEngine = {
         container.innerHTML = '<div class="error" style="padding: 40px; text-align: center; color: #d32f2f;">Error loading template: ' + error.message + '</div>';
       });
   },
-  
+
   /**
    * Initialize auto-binding between inputs and preview elements
    */
-  initializeBinding: function() {
+  initializeBinding: function () {
     var container = document.getElementById('templateContainer');
     if (!container) return;
-    
+
     // Find all input elements with data-field attributes
     var inputs = container.querySelectorAll('[data-field]');
-    
-    inputs.forEach(function(input) {
+
+    inputs.forEach(function (input) {
       var fieldName = input.getAttribute('data-field');
-      
+
       // Initialize template data
       if (!TemplateEngine.templateData[fieldName]) {
         TemplateEngine.templateData[fieldName] = input.value || input.textContent || '';
       }
-      
+
       // Setup event listeners based on input type
       if (input.tagName === 'INPUT' || input.tagName === 'TEXTAREA') {
         // For number inputs, use 'input' event for real-time updates
         if (input.type === 'number' || input.type === 'range') {
-          input.addEventListener('input', function() {
+          input.addEventListener('input', function () {
             TemplateEngine.updatePreview(fieldName, input.value);
+            // Special handling for rewindSeconds and forwardSeconds - update display format
+            if (fieldName === 'rewindSeconds' || fieldName === 'forwardSeconds') {
+              var container = document.getElementById('templateContainer');
+              if (container) {
+                var displayElements = container.querySelectorAll('[data-field="' + fieldName + '"]');
+                displayElements.forEach(function (el) {
+                  if (el.classList && el.classList.contains('control-btn-text')) {
+                    el.textContent = input.value + 's';
+                  } else if (el.tagName !== 'INPUT') {
+                    el.textContent = input.value + 's';
+                  }
+                });
+              }
+            }
           });
         }
         // For all inputs, also listen to 'change' event
-        input.addEventListener('change', function() {
+        input.addEventListener('change', function () {
           TemplateEngine.updatePreview(fieldName, input.value);
+          // Special handling for rewindSeconds and forwardSeconds
+          if (fieldName === 'rewindSeconds' || fieldName === 'forwardSeconds') {
+            var container = document.getElementById('templateContainer');
+            if (container) {
+              var displayElements = container.querySelectorAll('[data-field="' + fieldName + '"]');
+              displayElements.forEach(function (el) {
+                if (el.classList && el.classList.contains('control-btn-text')) {
+                  el.textContent = input.value + 's';
+                } else if (el.tagName !== 'INPUT') {
+                  el.textContent = input.value + 's';
+                }
+              });
+            }
+          }
         });
         // For text inputs, also listen to 'input' for real-time updates
         if (input.type === 'text' || input.type === 'textarea' || input.type === 'color') {
-          input.addEventListener('input', function() {
+          input.addEventListener('input', function () {
             TemplateEngine.updatePreview(fieldName, input.value);
           });
         }
       } else if (input.tagName === 'SELECT') {
-        input.addEventListener('change', function() {
+        input.addEventListener('change', function () {
           TemplateEngine.updatePreview(fieldName, input.value);
         });
       }
-      
+
       // Handle file inputs (for images and audio)
       if (input.type === 'file') {
-        input.addEventListener('change', function(e) {
-          TemplateEngine.handleFileInput(fieldName, e.target.files[0]);
+        input.addEventListener('change', function (e) {
+          if (e.target.files && e.target.files.length > 0) {
+            TemplateEngine.handleFileInput(fieldName, e.target.files[0]);
+          } else {
+            // File input cleared - remove image
+            if (fieldName === 'thumbnail' || fieldName.includes('thumbnail')) {
+              TemplateEngine.removeThumbnailImage();
+            }
+          }
         });
       }
     });
-    
+
     // Initialize preview elements with current values
     this.syncPreview();
   },
-  
+
   /**
    * Update preview element when input changes
+   * NOW USES CENTRALIZED FieldHandler - Auto-detects field type from name!
    */
-  updatePreview: function(fieldName, value) {
+  updatePreview: function (fieldName, value) {
     var container = document.getElementById('templateContainer');
     if (!container) return;
-    
+
     this.templateData[fieldName] = value;
-    
-    // Find the input element to check its type
-    var inputElement = container.querySelector('input[data-field="' + fieldName + '"]');
+
+    // Find the input element
+    var inputElement = container.querySelector('input[data-field="' + fieldName + '"], textarea[data-field="' + fieldName + '"], select[data-field="' + fieldName + '"]');
     var inputType = inputElement ? inputElement.type : '';
-    
-    // Handle number inputs for font sizes FIRST (they don't have matching preview elements)
+
+    // Special handling for font size fields that target nested elements
+    // Also handle color fields that target child elements
     if (inputType === 'number' && (fieldName.endsWith('Size') || fieldName.includes('FontSize'))) {
-      // Extract base field name (e.g., "headerMain" from "headerMainSize")
       var baseFieldName = fieldName.replace(/Size$/, '').replace(/FontSize$/, '');
-      
-      // Find the preview element with the base field name
-      var textContainer = container.querySelector('[data-field="' + baseFieldName + '"]');
-      
-      if (textContainer) {
-        var sizeTarget = null;
-        // Find the specific text element inside the container
-        if (fieldName.includes('headerMain')) {
-          sizeTarget = textContainer.querySelector('.header-main') || textContainer;
-        } else if (fieldName.includes('headerSub')) {
-          sizeTarget = textContainer.querySelector('.header-sub') || textContainer;
-        } else if (fieldName.includes('subtitle')) {
-          sizeTarget = textContainer.querySelector('.subtitle-text') || textContainer;
-        } else if (fieldName.includes('footer')) {
-          sizeTarget = textContainer.querySelector('.footer-text') || textContainer;
-        } else {
-          sizeTarget = textContainer;
-        }
-        
-        if (sizeTarget) {
-          sizeTarget.style.fontSize = value + 'px';
-          return;
+      // Try to find element with data-field-size attribute first
+      var sizeTarget = container.querySelector('[data-field-size="' + fieldName + '"]');
+
+      if (!sizeTarget) {
+        // Fallback: find by base field name
+        var textContainer = container.querySelector('[data-field="' + baseFieldName + '"]');
+        if (textContainer) {
+          if (fieldName.includes('headerMain')) {
+            sizeTarget = textContainer.querySelector('.header-main') || textContainer;
+          } else if (fieldName.includes('headerSub')) {
+            sizeTarget = textContainer.querySelector('.header-sub') || textContainer;
+          } else if (fieldName.includes('subtitle')) {
+            sizeTarget = textContainer.querySelector('.subtitle-text') || textContainer;
+          } else if (fieldName.includes('footer')) {
+            sizeTarget = textContainer.querySelector('.footer-text') || textContainer;
+          } else {
+            sizeTarget = textContainer;
+          }
         }
       }
-      return; // Exit early for font size inputs
+
+      if (sizeTarget) {
+        FieldHandler.updateSize(sizeTarget, value, fieldName);
+        return;
+      }
     }
-    
+
+    // Special handling for link fields
+    if (fieldName.includes('Link') || fieldName.includes('link') || fieldName === 'playButtonLink') {
+      var linkElements = container.querySelectorAll('[data-field-link="' + fieldName + '"], a[data-field="' + fieldName + '"]');
+      linkElements.forEach(function (element) {
+        if (element.tagName === 'A') {
+          element.href = value || '#';
+          element.setAttribute('data-field-link', fieldName);
+        }
+      });
+    }
+
+    // Special handling for color fields that target child elements
+    if (inputType === 'color' && fieldName.endsWith('Color') && !fieldName.includes('Bg')) {
+      // Find all elements with data-field-color matching this color field
+      var colorTargets = container.querySelectorAll('[data-field-color="' + fieldName + '"]');
+      colorTargets.forEach(function (target) {
+        FieldHandler.updateColor(target, value, fieldName);
+      });
+
+      // Also update elements with matching data-field (for backward compatibility)
+      var colorElements = container.querySelectorAll('[data-field="' + fieldName + '"]');
+      colorElements.forEach(function (element) {
+        if (element.tagName !== 'INPUT' && element.tagName !== 'TEXTAREA' && element.tagName !== 'SELECT') {
+          FieldHandler.updateColor(element, value, fieldName);
+        }
+      });
+    }
+
     // Find all preview elements with matching data-field
     var previewElements = container.querySelectorAll('[data-field="' + fieldName + '"]');
-    
-    previewElements.forEach(function(element) {
+
+    // Also find elements with data-field-* attributes (for child element targeting)
+    var attrVariations = [
+      '[data-field-' + fieldName.toLowerCase() + ']',
+      '[data-field-color="' + fieldName + '"]',
+      '[data-field-size="' + fieldName + '"]',
+      '[data-field-top="' + fieldName + '"]',
+      '[data-field-right="' + fieldName + '"]',
+      '[data-field-height="' + fieldName + '"]',
+      '[data-field-link="' + fieldName + '"]'
+    ];
+
+    var childElements = [];
+    attrVariations.forEach(function (selector) {
+      try {
+        var found = container.querySelectorAll(selector);
+        found.forEach(function (el) { childElements.push(el); });
+      } catch (e) {
+        // Invalid selector, skip
+      }
+    });
+
+    // Combine both sets
+    var allElements = [];
+    previewElements.forEach(function (el) {
+      if (allElements.indexOf(el) === -1) allElements.push(el);
+    });
+    childElements.forEach(function (el) {
+      if (allElements.indexOf(el) === -1) allElements.push(el);
+    });
+
+    allElements.forEach(function (element) {
       // Skip input elements (only update preview elements)
       if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA' || element.tagName === 'SELECT') {
         return;
       }
+
+      // Handle link fields specially
+      if (fieldName.includes('Link') || fieldName.includes('link') || fieldName === 'playButtonLink') {
+        if (element.tagName === 'A') {
+          element.href = value || '#';
+        }
+        return;
+      }
+
+      // USE CENTRALIZED FieldHandler - Auto-detects type and handles correctly!
+      FieldHandler.updatePreview(fieldName, value, element, inputElement);
+
+      // OLD CODE BELOW - Keeping for reference but FieldHandler handles it now
+      /*
       
       // Handle color inputs - NEVER set text content, only styles
       if (inputType === 'color') {
@@ -712,39 +820,45 @@ var TemplateEngine = {
           element.innerHTML = value;
         }
       }
+      */
     });
   },
-  
+
   /**
-   * Handle file input (images, audio)
-   * Stores image data URL in templateData for export
+   * Handle file input (images, audio, video)
+   * NOW USES CENTRALIZED FieldHandler - Auto-detects type from field name!
    */
-  handleFileInput: function(fieldName, file) {
+  handleFileInput: function (fieldName, file) {
     if (!file) return;
-    
-    var reader = new FileReader();
-    
-    reader.onload = function(e) {
-      var dataUrl = e.target.result;
-      
-      // IMPORTANT: Store in templateData FIRST before updating preview
-      // This ensures getFieldValues() can find the image
-      TemplateEngine.templateData[fieldName] = dataUrl;
-      
-      console.log('Image uploaded for field "' + fieldName + '":', dataUrl.substring(0, 50) + '...');
-      
-      // Remove any file path text that might be showing in preview
+
+    // Use centralized FieldHandler
+    FieldHandler.handleFileInput(fieldName, file, function (dataUrl) {
+      console.log('File uploaded for field "' + fieldName + '":', dataUrl.substring(0, 50) + '...');
+
+      // Show remove button in preview (NOT hiding play controls)
+      if (fieldName === 'thumbnail' || fieldName.includes('thumbnail')) {
+        var removePreviewBtn = document.getElementById('removeThumbnailPreviewBtn');
+        if (removePreviewBtn) removePreviewBtn.classList.add('show');
+      }
+
+      // Remove any file path text that might be showing in preview (but keep play controls visible)
       var container = document.getElementById('templateContainer');
       if (container) {
-        // Find and remove any text elements showing file paths
         var allElements = container.querySelectorAll('.preview-panel *');
-        allElements.forEach(function(el) {
+        allElements.forEach(function (el) {
+          // NEVER hide play-controls or control buttons
+          if (el.classList.contains('play-controls') || 
+              el.classList.contains('control-btn') || 
+              el.classList.contains('play-button') ||
+              el.closest('.play-controls')) {
+            return; // Skip play controls
+          }
+          
           var text = el.textContent || '';
-          if ((text.includes('fakepath') || text.includes('C:\\') || 
-               text.match(/^[A-Z]:\\.*\.(jpg|jpeg|png|gif|webp)$/i) ||
-               (file.name && text.includes(file.name))) && 
-              el.tagName !== 'INPUT' && el.tagName !== 'LABEL') {
-            // Only remove if it's not a data-field element with actual content
+          if ((text.includes('fakepath') || text.includes('C:\\') ||
+            text.match(/^[A-Z]:\\.*\.(jpg|jpeg|png|gif|webp|mp3|wav|mp4|webm)$/i) ||
+            (file.name && text.includes(file.name))) &&
+            el.tagName !== 'INPUT' && el.tagName !== 'LABEL') {
             var dataField = el.getAttribute('data-field');
             if (!dataField || dataField === fieldName) {
               el.style.display = 'none';
@@ -753,67 +867,103 @@ var TemplateEngine = {
             }
           }
         });
-      }
-      
-      // Update preview to show the image
-      TemplateEngine.updatePreview(fieldName, dataUrl);
-      
-      // Check if it's an audio file
-      if (file.type.startsWith('audio/')) {
-        TemplateEngine.audioFile = file;
-        var videoBtn = document.getElementById('downloadVideoBtn');
-        if (videoBtn) {
-          videoBtn.style.display = 'inline-block';
+        
+        // Ensure play-controls are always visible after image upload
+        var playControls = container.querySelector('.play-controls');
+        if (playControls) {
+          playControls.style.display = 'flex';
+          playControls.style.visibility = 'visible';
+          playControls.style.opacity = '1';
         }
       }
-    };
-    
-    reader.onerror = function(error) {
-      console.error('Error reading file:', error);
-      alert('Error reading file. Please try again.');
-    };
-    
-    if (file.type.startsWith('image/')) {
-      reader.readAsDataURL(file);
-    } else if (file.type.startsWith('audio/')) {
-      reader.readAsDataURL(file);
-    }
+    });
   },
-  
+
+  /**
+   * Remove thumbnail image
+   */
+  removeThumbnailImage: function () {
+    // Clear template data
+    this.templateData['thumbnail'] = null;
+
+    // Clear file input
+    var thumbnailInput = document.getElementById('thumbnailInput');
+    if (thumbnailInput) {
+      thumbnailInput.value = '';
+    }
+
+    // Hide remove buttons
+    var removeBtn = document.getElementById('removeThumbnailBtn');
+    var removePreviewBtn = document.getElementById('removeThumbnailPreviewBtn');
+    if (removeBtn) removeBtn.style.display = 'none';
+    if (removePreviewBtn) removePreviewBtn.classList.remove('show');
+
+    // Show play controls again
+    var videoSection = document.querySelector('.video-section[data-field="thumbnail"]');
+    if (videoSection) {
+      videoSection.classList.remove('has-thumbnail');
+      // Clear background image
+      videoSection.style.backgroundImage = '';
+      videoSection.style.backgroundColor = '#1a1a1a';
+    }
+
+    console.log('Thumbnail image removed');
+  },
+
+  /**
+   * Handle rewind button click
+   */
+  handleRewind: function () {
+    var rewindSeconds = parseInt(this.templateData['rewindSeconds'] || document.querySelector('input[data-field="rewindSeconds"]')?.value || '10', 10);
+    console.log('Rewind ' + rewindSeconds + ' seconds');
+    // Add your video rewind logic here
+    alert('Rewind ' + rewindSeconds + ' seconds');
+  },
+
+  /**
+   * Handle forward button click
+   */
+  handleForward: function () {
+    var forwardSeconds = parseInt(this.templateData['forwardSeconds'] || document.querySelector('input[data-field="forwardSeconds"]')?.value || '10', 10);
+    console.log('Forward ' + forwardSeconds + ' seconds');
+    // Add your video forward logic here
+    alert('Forward ' + forwardSeconds + ' seconds');
+  },
+
   /**
    * Sync all preview elements with current input values
    */
-  syncPreview: function() {
+  syncPreview: function () {
     var container = document.getElementById('templateContainer');
     if (!container) return;
-    
+
     var inputs = container.querySelectorAll('[data-field]');
-    
-    inputs.forEach(function(input) {
+
+    inputs.forEach(function (input) {
       var fieldName = input.getAttribute('data-field');
       var value = input.value || input.textContent || '';
-      
+
       if (input.tagName !== 'INPUT' && input.tagName !== 'TEXTAREA' && input.tagName !== 'SELECT') {
         return;
       }
-      
+
       // Skip file inputs during initial sync (they'll be handled when file is selected)
       if (input.type === 'file') {
         return;
       }
-      
+
       TemplateEngine.updatePreview(fieldName, value);
     });
-    
+
     // Remove any file path text overlays and hex codes that might be showing
     var allElements = container.querySelectorAll('.preview-panel *');
-    allElements.forEach(function(el) {
+    allElements.forEach(function (el) {
       var text = el.textContent || '';
-      
+
       // Remove file paths
-      if ((text.includes('fakepath') || text.includes('C:\\') || 
-           text.match(/^[A-Z]:\\.*\.(jpg|jpeg|png|gif|webp)$/i)) && 
-          el.tagName !== 'INPUT' && el.tagName !== 'LABEL') {
+      if ((text.includes('fakepath') || text.includes('C:\\') ||
+        text.match(/^[A-Z]:\\.*\.(jpg|jpeg|png|gif|webp)$/i)) &&
+        el.tagName !== 'INPUT' && el.tagName !== 'LABEL') {
         var dataField = el.getAttribute('data-field');
         if (!dataField || dataField.includes('thumbnail') || dataField.includes('image')) {
           el.style.display = 'none';
@@ -821,7 +971,7 @@ var TemplateEngine = {
           el.innerHTML = '';
         }
       }
-      
+
       // Remove hex color codes showing as text (like #00000, #2c5f8d, #8b2e2e)
       if (text.match(/^#[0-9a-fA-F]{3,6}$/) && el.tagName !== 'INPUT' && el.tagName !== 'LABEL') {
         var dataField = el.getAttribute('data-field');
@@ -835,7 +985,7 @@ var TemplateEngine = {
           el.innerHTML = '';
         }
       }
-      
+
       // Remove pure numeric text (like "320") from container elements that have children
       // This prevents width/height values from showing as text
       if (text.match(/^\d+$/) && el.tagName !== 'INPUT' && el.tagName !== 'LABEL' && el.children.length > 0) {
@@ -849,7 +999,7 @@ var TemplateEngine = {
               textNodes.push(el.childNodes[i]);
             }
           }
-          textNodes.forEach(function(node) {
+          textNodes.forEach(function (node) {
             if (node.textContent.trim().match(/^\d+$/)) {
               node.remove();
             }
@@ -858,42 +1008,42 @@ var TemplateEngine = {
       }
     });
   },
-  
+
   /**
    * Get all field values from current template
    * Captures images from preview elements directly to ensure uploaded images are included
    */
-  getFieldValues: function() {
+  getFieldValues: function () {
     var container = document.getElementById('templateContainer');
     if (!container) return {};
-    
+
     var inputs = container.querySelectorAll('[data-field]');
     var currentValues = {};
-    
+
     // Get current values from all input elements
-    inputs.forEach(function(input) {
+    inputs.forEach(function (input) {
       var fieldName = input.getAttribute('data-field');
-      
+
       if (input.tagName === 'INPUT' || input.tagName === 'TEXTAREA' || input.tagName === 'SELECT') {
         if (input.type === 'file') {
           // For file inputs, check multiple sources:
           // 1. Check templateData (stored when file was uploaded)
           // 2. Check preview image element src (current displayed image)
           var imageValue = null;
-          
-          if (TemplateEngine.templateData[fieldName] && 
-              (TemplateEngine.templateData[fieldName].startsWith('data:') || 
-               TemplateEngine.templateData[fieldName].startsWith('blob:'))) {
+
+          if (TemplateEngine.templateData[fieldName] &&
+            (TemplateEngine.templateData[fieldName].startsWith('data:') ||
+              TemplateEngine.templateData[fieldName].startsWith('blob:'))) {
             imageValue = TemplateEngine.templateData[fieldName];
           } else {
             // Try to get from preview image element
             var previewImg = container.querySelector('img[data-field="' + fieldName + '"]');
-            if (previewImg && previewImg.src && 
-                (previewImg.src.startsWith('data:') || previewImg.src.startsWith('blob:'))) {
+            if (previewImg && previewImg.src &&
+              (previewImg.src.startsWith('data:') || previewImg.src.startsWith('blob:'))) {
               imageValue = previewImg.src;
             }
           }
-          
+
           if (imageValue) {
             currentValues[fieldName] = imageValue;
           }
@@ -902,10 +1052,10 @@ var TemplateEngine = {
         }
       }
     });
-    
+
     // Also get values from preview elements (for images that might not have input)
     var previewImages = container.querySelectorAll('img[data-field]');
-    previewImages.forEach(function(img) {
+    previewImages.forEach(function (img) {
       var fieldName = img.getAttribute('data-field');
       // Only add if it's a data URL or blob URL (uploaded image)
       if (img.src && (img.src.startsWith('data:') || img.src.startsWith('blob:'))) {
@@ -914,41 +1064,41 @@ var TemplateEngine = {
         }
       }
     });
-    
+
     // Merge with templateData to include any programmatically set values
     for (var key in this.templateData) {
       if (!currentValues.hasOwnProperty(key)) {
         currentValues[key] = this.templateData[key];
-      } else if (key in this.templateData && 
-                 this.templateData[key] && 
-                 this.templateData[key].startsWith('data:')) {
+      } else if (key in this.templateData &&
+        this.templateData[key] &&
+        this.templateData[key].startsWith('data:')) {
         // Prefer templateData for images (more reliable)
         currentValues[key] = this.templateData[key];
       }
     }
-    
+
     console.log('Captured field values:', Object.keys(currentValues));
     return currentValues;
   },
-  
+
   /**
    * Get selected source language
    */
-  getSourceLanguage: function() {
+  getSourceLanguage: function () {
     var sourceSelect = document.getElementById('sourceLanguageSelect');
     if (sourceSelect && sourceSelect.value) {
       return sourceSelect.value;
     }
     return 'en'; // Default to English if not found
   },
-  
+
   /**
    * Get selected languages
    */
-  getSelectedLanguages: function() {
+  getSelectedLanguages: function () {
     var checkboxes = document.querySelectorAll('.language-checkbox input[type="checkbox"]:checked');
     var languages = [];
-    checkboxes.forEach(function(cb) {
+    checkboxes.forEach(function (cb) {
       // Skip the "Select All" checkbox
       if (cb.id !== 'selectAllLanguages' && cb.value) {
         languages.push(cb.value);
@@ -956,13 +1106,13 @@ var TemplateEngine = {
     });
     return languages;
   },
-  
+
   /**
    * Select or deselect all languages
    */
-  toggleSelectAllLanguages: function(selectAll) {
+  toggleSelectAllLanguages: function (selectAll) {
     var checkboxes = document.querySelectorAll('.language-checkbox input[type="checkbox"]');
-    checkboxes.forEach(function(cb) {
+    checkboxes.forEach(function (cb) {
       // Skip the "Select All" checkbox itself
       if (cb.id !== 'selectAllLanguages') {
         cb.checked = selectAll;
@@ -970,11 +1120,11 @@ var TemplateEngine = {
     });
     this.updateLanguageDropdownText();
   },
-  
+
   /**
    * Update language dropdown text
    */
-  updateLanguageDropdownText: function() {
+  updateLanguageDropdownText: function () {
     var selected = this.getSelectedLanguages();
     var text = document.getElementById('languageDropdownText');
     if (text) {
@@ -987,26 +1137,26 @@ var TemplateEngine = {
       }
     }
   },
-  
+
   /**
    * Initialize language dropdown
    */
-  initializeLanguageDropdown: function() {
+  initializeLanguageDropdown: function () {
     var dropdown = document.getElementById('languageDropdown');
     var button = document.getElementById('languageDropdownButton');
     var content = document.getElementById('languageDropdownContent');
     var searchInput = document.getElementById('languageSearch');
     var list = document.getElementById('languageDropdownList');
-    
+
     if (!dropdown || !button || !content || !list) {
       console.log('Language dropdown elements not found, retrying in 200ms...');
       // Retry after a short delay if elements aren't ready
-      setTimeout(function() {
+      setTimeout(function () {
         TemplateEngine.initializeLanguageDropdown();
       }, 200);
       return;
     }
-    
+
     // Prevent duplicate initialization - but allow re-initialization if needed
     if (dropdown.dataset.initialized === 'true') {
       console.log('Language dropdown already initialized, just updating text');
@@ -1014,23 +1164,23 @@ var TemplateEngine = {
       // Re-attach checkbox listeners in case they were lost
       var checkboxes = list.querySelectorAll('input[type="checkbox"]');
       var self = this;
-      checkboxes.forEach(function(cb) {
+      checkboxes.forEach(function (cb) {
         if (!cb.hasAttribute('data-dropdown-listener')) {
           cb.setAttribute('data-dropdown-listener', 'true');
-          cb.addEventListener('change', function() {
+          cb.addEventListener('change', function () {
             self.updateLanguageDropdownText();
           });
         }
       });
       return;
     }
-    
+
     // Mark as initialized
     dropdown.dataset.initialized = 'true';
     console.log('Initializing language dropdown...');
-    
+
     // Toggle dropdown
-    button.addEventListener('click', function(e) {
+    button.addEventListener('click', function (e) {
       e.stopPropagation();
       dropdown.classList.toggle('open');
       if (dropdown.classList.contains('open')) {
@@ -1040,25 +1190,25 @@ var TemplateEngine = {
         content.style.display = 'none';
       }
     });
-    
+
     // Close dropdown when clicking outside
-    var clickOutsideHandler = function(e) {
+    var clickOutsideHandler = function (e) {
       if (!dropdown.contains(e.target)) {
         dropdown.classList.remove('open');
         content.style.display = 'none';
       }
     };
     document.addEventListener('click', clickOutsideHandler);
-    
+
     // Store handler for cleanup if needed
     dropdown._clickOutsideHandler = clickOutsideHandler;
-    
+
     // Search functionality
     if (searchInput) {
-      searchInput.addEventListener('input', function() {
+      searchInput.addEventListener('input', function () {
         var searchTerm = this.value.toLowerCase();
         var checkboxes = list.querySelectorAll('.language-checkbox');
-        checkboxes.forEach(function(checkbox) {
+        checkboxes.forEach(function (checkbox) {
           var selectAllCheckbox = checkbox.querySelector('#selectAllLanguages');
           // Always show "Select All" checkbox
           if (selectAllCheckbox) {
@@ -1073,25 +1223,25 @@ var TemplateEngine = {
         });
       });
     }
-    
+
     // Handle "Select All" checkbox
     var selectAllCheckbox = document.getElementById('selectAllLanguages');
     if (selectAllCheckbox) {
-      selectAllCheckbox.addEventListener('change', function() {
+      selectAllCheckbox.addEventListener('change', function () {
         var self = TemplateEngine;
         var selectAll = this.checked;
         self.toggleSelectAllLanguages(selectAll);
       });
     }
-    
+
     // Update dropdown text when checkboxes change
     var checkboxes = list.querySelectorAll('input[type="checkbox"]');
     var self = this;
-    checkboxes.forEach(function(cb) {
+    checkboxes.forEach(function (cb) {
       // Check if listener already exists
       if (!cb.hasAttribute('data-dropdown-listener')) {
         cb.setAttribute('data-dropdown-listener', 'true');
-        cb.addEventListener('change', function() {
+        cb.addEventListener('change', function () {
           // Update "Select All" checkbox state
           if (cb.id !== 'selectAllLanguages') {
             var allCheckboxes = list.querySelectorAll('.language-checkbox input[type="checkbox"]:not(#selectAllLanguages)');
@@ -1105,10 +1255,10 @@ var TemplateEngine = {
         });
       }
     });
-    
+
     // Initial update
     this.updateLanguageDropdownText();
-    
+
     // Update "Select All" checkbox initial state
     if (selectAllCheckbox) {
       var allCheckboxes = list.querySelectorAll('.language-checkbox input[type="checkbox"]:not(#selectAllLanguages)');
@@ -1116,31 +1266,31 @@ var TemplateEngine = {
       selectAllCheckbox.checked = (checkedCount === allCheckboxes.length);
       selectAllCheckbox.indeterminate = (checkedCount > 0 && checkedCount < allCheckboxes.length);
     }
-    
+
     console.log('Language dropdown initialized successfully');
   },
-  
+
   /**
    * Update blur preview demo
    * Shows live preview of blur effect
    */
-  updateBlurPreview: function(blurIntensity) {
+  updateBlurPreview: function (blurIntensity) {
     var previewCanvas = document.getElementById('blurPreviewCanvas');
     if (!previewCanvas || typeof ExportFunctions === 'undefined') {
       return;
     }
-    
+
     try {
       var ctx = previewCanvas.getContext('2d');
       var previewWidth = 200;
       var previewHeight = 150;
-      
+
       // Create demo source image (320x480 scaled down for preview)
       var sourceCanvas = document.createElement('canvas');
       sourceCanvas.width = 320;
       sourceCanvas.height = 480;
       var sourceCtx = sourceCanvas.getContext('2d');
-      
+
       // Draw a colorful demo ad pattern
       // Background gradient
       var bgGradient = sourceCtx.createLinearGradient(0, 0, 320, 480);
@@ -1149,43 +1299,43 @@ var TemplateEngine = {
       bgGradient.addColorStop(1, '#f093fb');
       sourceCtx.fillStyle = bgGradient;
       sourceCtx.fillRect(0, 0, 320, 480);
-      
+
       // Add some demo content (circles, rectangles, text)
       sourceCtx.fillStyle = 'rgba(255, 255, 255, 0.9)';
       sourceCtx.fillRect(40, 100, 240, 120);
-      
+
       sourceCtx.fillStyle = '#667eea';
       sourceCtx.font = 'bold 24px Arial';
       sourceCtx.textAlign = 'center';
       sourceCtx.fillText('DEMO AD', 160, 160);
-      
+
       sourceCtx.fillStyle = '#764ba2';
       sourceCtx.font = '16px Arial';
       sourceCtx.fillText('Sample Content', 160, 190);
-      
+
       // Add some decorative elements
       sourceCtx.fillStyle = 'rgba(255, 255, 255, 0.6)';
       sourceCtx.beginPath();
       sourceCtx.arc(80, 250, 30, 0, Math.PI * 2);
       sourceCtx.fill();
-      
+
       sourceCtx.beginPath();
       sourceCtx.arc(240, 250, 30, 0, Math.PI * 2);
       sourceCtx.fill();
-      
+
       sourceCtx.fillStyle = '#fff';
       sourceCtx.fillRect(120, 300, 80, 40);
       sourceCtx.fillStyle = '#667eea';
       sourceCtx.font = 'bold 14px Arial';
       sourceCtx.fillText('BUTTON', 160, 325);
-      
+
       // Now apply blur effect using ExportFunctions method
       if (ExportFunctions.createBlurredAdBackground) {
         var blurredBg = ExportFunctions.createBlurredAdBackground(sourceCanvas, previewWidth, previewHeight, blurIntensity);
-        
+
         // Draw blurred background
         ctx.drawImage(blurredBg, 0, 0);
-        
+
         // Draw centered sharp demo ad on top (maintains 320×480 aspect ratio, no stretching)
         // Math.min ensures ad fits within preview while maintaining exact aspect ratio
         var scale = Math.min(previewWidth / 320, previewHeight / 480);
@@ -1193,7 +1343,7 @@ var TemplateEngine = {
         var scaledHeight = 480 * scale; // Maintains 320×480 aspect ratio
         var x = (previewWidth - scaledWidth) / 2;  // Center horizontally
         var y = (previewHeight - scaledHeight) / 2; // Center vertically
-        
+
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
         // Draw ad - maintains original aspect ratio, never stretched
@@ -1218,29 +1368,29 @@ var TemplateEngine = {
       ctx.fillText('Preview Error', previewCanvas.width / 2, previewCanvas.height / 2);
     }
   },
-  
+
   /**
    * Download ZIP file
    */
-  downloadZip: function() {
+  downloadZip: function () {
     if (typeof ExportFunctions !== 'undefined') {
       ExportFunctions.downloadZip();
     }
   },
-  
+
   /**
    * Download images
    */
-  downloadImages: function() {
+  downloadImages: function () {
     if (typeof ExportFunctions !== 'undefined') {
       ExportFunctions.downloadImages();
     }
   },
-  
+
   /**
    * Download video
    */
-  downloadVideo: function() {
+  downloadVideo: function () {
     if (typeof ExportFunctions !== 'undefined') {
       ExportFunctions.downloadVideo();
     }

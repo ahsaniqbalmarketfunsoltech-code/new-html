@@ -628,45 +628,81 @@ var ExportFunctions = {
     
     // Update all data-field elements with translated data
     Object.keys(translatedData).forEach(function(fieldName) {
+      var value = translatedData[fieldName];
+      
+      // Skip if value is a file path
+      if (typeof value === 'string' && (value.includes('fakepath') || value.includes('C:\\') || value.match(/^[A-Z]:\\.*\.(jpg|jpeg|png|gif|webp)$/i))) {
+        return; // Skip file paths
+      }
+      
+      // Find elements with matching data-field
       var elements = clone.querySelectorAll('[data-field="' + fieldName + '"]');
-      elements.forEach(function(element) {
+      
+      // Also find elements with data-field-* attributes (for child element targeting)
+      // Handle data-field-color, data-field-size, data-field-top, data-field-right, data-field-height, data-field-link
+      var attrSelectors = [
+        '[data-field-color="' + fieldName + '"]',
+        '[data-field-size="' + fieldName + '"]',
+        '[data-field-top="' + fieldName + '"]',
+        '[data-field-right="' + fieldName + '"]',
+        '[data-field-height="' + fieldName + '"]',
+        '[data-field-link="' + fieldName + '"]'
+      ];
+      
+      // Handle link fields specially
+      if (fieldName.includes('Link') || fieldName.includes('link') || fieldName === 'playButtonLink') {
+        var linkElements = clone.querySelectorAll('[data-field-link="' + fieldName + '"], a[data-field="' + fieldName + '"]');
+        linkElements.forEach(function(element) {
+          if (element.tagName === 'A') {
+            element.href = value || '#';
+            element.setAttribute('data-field-link', fieldName);
+            // Update onclick handler with new link
+            element.setAttribute('onclick', 'event.preventDefault(); var link = this.getAttribute(\'href\'); if(link && link !== \'#\' && link !== \'https://example.com\') window.open(link, \'_blank\'); return false;');
+          }
+        });
+        return; // Skip other processing for link fields
+      }
+      
+      var childElements = [];
+      attrSelectors.forEach(function(selector) {
+        try {
+          var found = clone.querySelectorAll(selector);
+          found.forEach(function(el) { 
+            if (childElements.indexOf(el) === -1) childElements.push(el); 
+          });
+        } catch(e) {
+          // Invalid selector, skip
+        }
+      });
+      
+      // Combine both sets
+      var allElements = [];
+      elements.forEach(function(el) { 
+        if (allElements.indexOf(el) === -1) allElements.push(el); 
+      });
+      childElements.forEach(function(el) { 
+        if (allElements.indexOf(el) === -1) allElements.push(el); 
+      });
+      
+      allElements.forEach(function(element) {
         if (element.tagName !== 'INPUT' && element.tagName !== 'TEXTAREA' && element.tagName !== 'SELECT') {
-          var value = translatedData[fieldName];
-          
-          // Skip if value is a file path (like "C:\fakepath\...")
-          if (typeof value === 'string' && (value.includes('fakepath') || value.includes('C:\\') || value.match(/^[A-Z]:\\.*\.(jpg|jpeg|png|gif|webp)$/i))) {
-            return; // Skip file paths
-          }
-          
-          if (element.tagName === 'IMG') {
-            element.src = value;
-          } else if (element.tagName === 'VIDEO' || element.tagName === 'AUDIO') {
-            element.src = value;
-          } else {
-            // Check if element should have background image (like video-section with thumbnail)
-            if (fieldName.includes('thumbnail') || fieldName.includes('image') || fieldName.includes('background')) {
-              if (value && (value.startsWith('data:image') || value.startsWith('blob:'))) {
-                element.style.backgroundImage = 'url(' + value + ')';
-                element.style.backgroundSize = 'cover';
-                element.style.backgroundPosition = 'center';
-                // Remove any text content that might be showing file path
-                element.textContent = '';
-                var textChildren = element.querySelectorAll('*');
-                textChildren.forEach(function(child) {
-                  if (child.textContent && (child.textContent.includes('fakepath') || child.textContent.includes('C:\\'))) {
-                    child.style.display = 'none';
-                    child.textContent = '';
-                  }
-                });
-                return;
-              }
-            }
-            element.textContent = value;
-            element.innerHTML = value;
-          }
+          // Use FieldHandler for consistent behavior
+          FieldHandler.updatePreview(fieldName, value, element);
         }
       });
     });
+    
+    // Ensure forward/backward buttons are clickable in exported HTML
+    var rewindBtn = clone.querySelector('#rewindBtn');
+    var forwardBtn = clone.querySelector('#forwardBtn');
+    if (rewindBtn) {
+      var rewindSeconds = translatedData['rewindSeconds'] || '10';
+      rewindBtn.setAttribute('onclick', 'alert("Rewind ' + rewindSeconds + ' seconds");');
+    }
+    if (forwardBtn) {
+      var forwardSeconds = translatedData['forwardSeconds'] || '10';
+      forwardBtn.setAttribute('onclick', 'alert("Forward ' + forwardSeconds + ' seconds");');
+    }
     
     // Remove any file path text overlays, hex codes, and numeric text from the clone
     var allTextElements = clone.querySelectorAll('*');
@@ -757,7 +793,7 @@ var ExportFunctions = {
       '<html lang="en">\n' +
       '<head>\n' +
       '  <meta charset="UTF-8">\n' +
-      '  <meta name="viewport" content="width=320, initial-scale=1.0">\n' +
+      '  <meta name="viewport" content="width=320, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">\n' +
       '  <title>Exported Ad Template</title>\n' +
       '  <style>\n' +
       '    * {\n' +
@@ -765,22 +801,14 @@ var ExportFunctions = {
       '      padding: 0;\n' +
       '      box-sizing: border-box;\n' +
       '    }\n' +
-      '    html {\n' +
-      '      width: 100%;\n' +
-      '      height: 100%;\n' +
-      '      display: flex;\n' +
-      '      align-items: center;\n' +
-      '      justify-content: center;\n' +
-      '      background: #f0f0f0;\n' +
-      '    }\n' +
-      '    body {\n' +
+      '    html, body {\n' +
       '      width: 320px;\n' +
       '      height: 480px;\n' +
-      '      font-family: Arial, sans-serif;\n' +
-      '      background: white;\n' +
-      '      overflow: hidden;\n' +
       '      margin: 0;\n' +
       '      padding: 0;\n' +
+      '      overflow: hidden;\n' +
+      '      font-family: Arial, sans-serif;\n' +
+      '      background: white;\n' +
       '    }\n' +
       '    .preview-panel {\n' +
       '      width: 320px;\n' +
@@ -793,6 +821,37 @@ var ExportFunctions = {
       '      align-items: center;\n' +
       '      justify-content: center;\n' +
       '      overflow: hidden;\n' +
+      '      position: relative;\n' +
+      '    }\n' +
+      '    .video-ad-container {\n' +
+      '      width: 320px !important;\n' +
+      '      height: 480px !important;\n' +
+      '      max-width: 320px !important;\n' +
+      '      max-height: 480px !important;\n' +
+      '      min-width: 320px !important;\n' +
+      '      min-height: 480px !important;\n' +
+      '      display: flex !important;\n' +
+      '      flex-direction: column !important;\n' +
+      '      overflow: hidden !important;\n' +
+      '    }\n' +
+      '    .ad-header, .ad-subtitle, .ad-footer {\n' +
+      '      flex-shrink: 0 !important;\n' +
+      '      flex-grow: 0 !important;\n' +
+      '    }\n' +
+      '    .video-section {\n' +
+      '      flex: 1 1 0 !important;\n' +
+      '      min-height: 0 !important;\n' +
+      '      overflow: hidden !important;\n' +
+      '    }\n' +
+      '    .ad-footer {\n' +
+      '      display: block !important;\n' +
+      '      visibility: visible !important;\n' +
+      '      opacity: 1 !important;\n' +
+      '    }\n' +
+      '    .footer-text {\n' +
+      '      display: block !important;\n' +
+      '      visibility: visible !important;\n' +
+      '      opacity: 1 !important;\n' +
       '    }\n' +
       styles + '\n' +
       '  </style>\n' +
