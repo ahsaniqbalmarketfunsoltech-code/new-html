@@ -692,21 +692,48 @@ var ExportFunctions = {
       });
     });
     
-    // Ensure forward/backward buttons are clickable in exported HTML
+    // Remove red remove button from exported HTML (only show in preview)
+    var removeBtn = clone.querySelector('#removeThumbnailPreviewBtn');
+    if (removeBtn) {
+      removeBtn.remove();
+    }
+    
+    // Forward/Backward buttons are non-clickable (display only) - remove onclick handlers
     var rewindBtn = clone.querySelector('#rewindBtn');
     var forwardBtn = clone.querySelector('#forwardBtn');
     if (rewindBtn) {
-      var rewindSeconds = translatedData['rewindSeconds'] || '10';
-      rewindBtn.setAttribute('onclick', 'alert("Rewind ' + rewindSeconds + ' seconds");');
+      rewindBtn.removeAttribute('onclick');
+      rewindBtn.style.pointerEvents = 'none';
+      rewindBtn.style.cursor = 'default';
     }
     if (forwardBtn) {
-      var forwardSeconds = translatedData['forwardSeconds'] || '10';
-      forwardBtn.setAttribute('onclick', 'alert("Forward ' + forwardSeconds + ' seconds");');
+      forwardBtn.removeAttribute('onclick');
+      forwardBtn.style.pointerEvents = 'none';
+      forwardBtn.style.cursor = 'default';
+    }
+    
+    // CRITICAL: Ensure footer is never removed or hidden
+    var footer = clone.querySelector('.ad-footer');
+    if (footer) {
+      footer.style.display = 'block';
+      footer.style.visibility = 'visible';
+      footer.style.opacity = '1';
+    }
+    var footerText = clone.querySelector('.footer-text');
+    if (footerText) {
+      footerText.style.display = 'block';
+      footerText.style.visibility = 'visible';
+      footerText.style.opacity = '1';
     }
     
     // Remove any file path text overlays, hex codes, and numeric text from the clone
     var allTextElements = clone.querySelectorAll('*');
     allTextElements.forEach(function(el) {
+      // NEVER hide footer elements
+      if (el.classList.contains('ad-footer') || el.classList.contains('footer-text') || el.closest('.ad-footer')) {
+        return; // Skip footer elements
+      }
+      
       var text = el.textContent || '';
       
       // Remove file paths
@@ -749,6 +776,18 @@ var ExportFunctions = {
         }
       }
     });
+    
+    // Final check: Ensure footer is visible
+    if (footer) {
+      footer.style.display = 'block';
+      footer.style.visibility = 'visible';
+      footer.style.opacity = '1';
+    }
+    if (footerText) {
+      footerText.style.display = 'block';
+      footerText.style.visibility = 'visible';
+      footerText.style.opacity = '1';
+    }
     
     // Extract all CSS styles from the template container
     var styles = '';
@@ -802,13 +841,16 @@ var ExportFunctions = {
       '      box-sizing: border-box;\n' +
       '    }\n' +
       '    html, body {\n' +
-      '      width: 320px;\n' +
-      '      height: 480px;\n' +
+      '      width: 100%;\n' +
+      '      height: 100vh;\n' +
       '      margin: 0;\n' +
       '      padding: 0;\n' +
       '      overflow: hidden;\n' +
       '      font-family: Arial, sans-serif;\n' +
       '      background: white;\n' +
+      '      display: flex;\n' +
+      '      align-items: center;\n' +
+      '      justify-content: center;\n' +
       '    }\n' +
       '    .preview-panel {\n' +
       '      width: 320px;\n' +
@@ -847,11 +889,24 @@ var ExportFunctions = {
       '      display: block !important;\n' +
       '      visibility: visible !important;\n' +
       '      opacity: 1 !important;\n' +
+      '      flex-shrink: 0 !important;\n' +
+      '      flex-grow: 0 !important;\n' +
+      '      min-height: fit-content !important;\n' +
       '    }\n' +
       '    .footer-text {\n' +
       '      display: block !important;\n' +
       '      visibility: visible !important;\n' +
       '      opacity: 1 !important;\n' +
+      '    }\n' +
+      '    .control-btn-icon {\n' +
+      '      display: none !important;\n' +
+      '    }\n' +
+      '    .control-btn {\n' +
+      '      pointer-events: none !important;\n' +
+      '      cursor: default !important;\n' +
+      '    }\n' +
+      '    #removeThumbnailPreviewBtn {\n' +
+      '      display: none !important;\n' +
       '    }\n' +
       styles + '\n' +
       '  </style>\n' +

@@ -898,13 +898,30 @@ var TemplateEngine = {
     if (removeBtn) removeBtn.style.display = 'none';
     if (removePreviewBtn) removePreviewBtn.classList.remove('show');
 
-    // Show play controls again
+    // Clear background image and ensure play-controls are visible
     var videoSection = document.querySelector('.video-section[data-field="thumbnail"]');
     if (videoSection) {
-      videoSection.classList.remove('has-thumbnail');
       // Clear background image
       videoSection.style.backgroundImage = '';
       videoSection.style.backgroundColor = '#1a1a1a';
+      
+      // CRITICAL: Ensure play-controls are ALWAYS visible after removing image
+      var playControls = videoSection.querySelector('.play-controls');
+      if (playControls) {
+        playControls.style.display = 'flex';
+        playControls.style.visibility = 'visible';
+        playControls.style.opacity = '1';
+        playControls.style.position = 'relative';
+        playControls.style.zIndex = '10';
+      }
+      
+      // Also ensure individual buttons are visible
+      var controlBtns = videoSection.querySelectorAll('.control-btn, .play-button');
+      controlBtns.forEach(function(btn) {
+        btn.style.display = 'flex';
+        btn.style.visibility = 'visible';
+        btn.style.opacity = '1';
+      });
     }
 
     console.log('Thumbnail image removed');

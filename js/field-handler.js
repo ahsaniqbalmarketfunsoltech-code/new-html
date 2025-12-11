@@ -175,30 +175,67 @@ var FieldHandler = {
         element.style.backgroundSize = 'cover';
         element.style.backgroundPosition = 'center';
         element.style.backgroundRepeat = 'no-repeat';
-        // Remove any file path text (but DON'T hide play-controls or control buttons)
-        element.textContent = '';
+        // Remove any file path text (but DON'T use textContent = '' as it can remove child elements)
+        // Instead, only remove text nodes that contain file paths
+        var walker = document.createTreeWalker(
+          element,
+          NodeFilter.SHOW_TEXT,
+          null,
+          false
+        );
+        var textNodes = [];
+        var node;
+        while (node = walker.nextNode()) {
+          var text = node.textContent || '';
+          if (text.includes('fakepath') || text.includes('C:\\') || 
+              text.match(/^[A-Z]:\\.*\.(jpg|jpeg|png|gif|webp)$/i)) {
+            var parent = node.parentElement;
+            if (parent && !parent.closest('.play-controls') && 
+                !parent.classList.contains('play-controls') &&
+                !parent.classList.contains('control-btn') &&
+                !parent.classList.contains('play-button')) {
+              textNodes.push(node);
+            }
+          }
+        }
+        textNodes.forEach(function(textNode) {
+          textNode.remove();
+        });
+        
+        // Also hide any elements that show file paths (but not play-controls)
         var textChildren = element.querySelectorAll('*');
         textChildren.forEach(function(child) {
-          // Skip play-controls and control buttons - they should always be visible
           if (child.classList.contains('play-controls') || 
               child.classList.contains('control-btn') || 
               child.classList.contains('play-button') ||
               child.closest('.play-controls')) {
-            return; // Don't hide play controls
+            return;
           }
-          if (child.textContent && (child.textContent.includes('fakepath') || child.textContent.includes('C:\\'))) {
+          var text = child.textContent || '';
+          if (text && (text.includes('fakepath') || text.includes('C:\\') || 
+              text.match(/^[A-Z]:\\.*\.(jpg|jpeg|png|gif|webp)$/i))) {
             child.style.display = 'none';
             child.textContent = '';
           }
         });
         
-        // Ensure play-controls are always visible
+        // CRITICAL: Ensure play-controls are ALWAYS visible after image upload
         var playControls = element.querySelector('.play-controls');
         if (playControls) {
           playControls.style.display = 'flex';
           playControls.style.visibility = 'visible';
           playControls.style.opacity = '1';
+          playControls.style.position = 'relative';
+          playControls.style.zIndex = '10';
         }
+        
+        // Also ensure individual buttons are visible
+        var controlBtns = element.querySelectorAll('.control-btn, .play-button');
+        controlBtns.forEach(function(btn) {
+          btn.style.display = 'flex';
+          btn.style.visibility = 'visible';
+          btn.style.opacity = '1';
+        });
       }
       return;
     }

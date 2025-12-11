@@ -247,32 +247,19 @@
       font-size: 11px;
       font-weight: 700;
       color: #000;
-      cursor: pointer;
+      cursor: default;
       flex-direction: column;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-      transition: all 0.2s ease;
+      transition: none;
       position: relative;
       z-index: 11;
       border: none;
       padding: 0;
       font-family: inherit;
+      pointer-events: none;
     }
 
-    .control-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      background: rgba(255, 255, 255, 1);
-    }
-
-    .control-btn:active {
-      transform: scale(0.95);
-      background: rgba(240, 240, 240, 0.95);
-    }
-
-    .control-btn:focus {
-      outline: 2px solid rgba(255, 255, 255, 0.8);
-      outline-offset: 2px;
-    }
+    /* Forward/Backward buttons are non-clickable - no hover/active effects */
 
     .control-btn-icon {
       font-size: 18px;
@@ -646,21 +633,17 @@
           </button>
 
           <div class="play-controls">
-            <button type="button" class="control-btn" data-field-size="controlButtonSize" id="rewindBtn"
-              onclick="TemplateEngine.handleRewind();">
-              <div class="control-btn-icon">⏮</div>
+            <div class="control-btn" data-field-size="controlButtonSize" id="rewindBtn">
               <div class="control-btn-text" data-field="rewindSeconds">10s</div>
-            </button>
+            </div>
             <a href="#" class="play-button" data-field-size="playButtonSize" data-field-link="playButtonLink"
               target="_blank"
               onclick="event.preventDefault(); var link = this.getAttribute('href'); if(link && link !== '#' && link !== 'https://example.com') window.open(link, '_blank'); return false;">
               <div class="play-icon"></div>
             </a>
-            <button type="button" class="control-btn" data-field-size="controlButtonSize" id="forwardBtn"
-              onclick="TemplateEngine.handleForward();">
+            <div class="control-btn" data-field-size="controlButtonSize" id="forwardBtn">
               <div class="control-btn-text" data-field="forwardSeconds">10s</div>
-              <div class="control-btn-icon">⏭</div>
-            </button>
+            </div>
           </div>
         </div>
 
