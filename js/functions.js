@@ -2348,36 +2348,71 @@ var ExportFunctions = {
           var htmlContent = this.getRenderedHTML(data);
           
           // Create video for each size
+          var videosCreated = 0;
           for (var sizeIdx = 0; sizeIdx < sizes.length; sizeIdx++) {
             var size = sizes[sizeIdx];
             
             try {
               if (currentLanguage) {
-                currentLanguage.textContent = '🎬 Creating ' + size.name + ' video for ' + lang.toUpperCase() + '...';
+                currentLanguage.textContent = '🎬 Creating ' + size.name + ' video for ' + lang.toUpperCase() + '... (' + (sizeIdx + 1) + '/' + sizes.length + ')';
               }
+              
+              console.log('Creating video for size:', size.name, 'Dimensions:', size.width + 'x' + size.height);
               
               // Create video with animations using MediaRecorder (creates WebM with audio included)
               var videoBlob = await this.createVideoFromCanvasAndAudio(htmlContent, TemplateEngine.audioFile, size.width, size.height);
+              
+              // Verify video blob was created
+              if (!videoBlob || videoBlob.size === 0) {
+                throw new Error('Video blob is empty or invalid for size ' + size.name);
+              }
+              
+              console.log('Video created for ' + size.name + ':', videoBlob.size, 'bytes');
               
               // Save as MP4 (MediaRecorder creates WebM, but we'll save with .mp4 extension)
               // Note: The file will be WebM format but with .mp4 extension
               // Most modern players can handle WebM files even with .mp4 extension
               // For true MP4, we would need FFmpeg.wasm (which has CORS issues)
               zip.file(size.name + '.mp4', videoBlob);
+              videosCreated++;
+              
+              console.log('Added ' + size.name + '.mp4 to ZIP. Total videos in ZIP:', videosCreated);
               
               // Delay between video generations
               await new Promise(resolve => setTimeout(resolve, 500));
               
             } catch (error) {
               console.error('Error creating video ' + size.name + ' for ' + lang + ':', error);
+              console.error('Error stack:', error.stack);
               if (currentLanguage) {
-                currentLanguage.textContent = '❌ Error creating ' + size.name + ' for ' + lang.toUpperCase();
+                currentLanguage.textContent = '❌ Error creating ' + size.name + ' for ' + lang.toUpperCase() + ': ' + error.message;
               }
+              // Continue with next size even if one fails
             }
+          }
+          
+          // Verify all videos were added
+          console.log('Total videos created for ' + lang + ':', videosCreated, 'out of', sizes.length);
+          if (videosCreated < sizes.length) {
+            console.warn('Warning: Only ' + videosCreated + ' out of ' + sizes.length + ' videos were created for ' + lang);
+          }
+          
+          // Verify ZIP contents before generating
+          var zipFiles = Object.keys(zip.files);
+          console.log('ZIP files before generation for ' + lang + ':', zipFiles);
+          
+          if (zipFiles.length === 0) {
+            throw new Error('No videos were added to ZIP for ' + lang);
+          }
+          
+          if (zipFiles.length < sizes.length) {
+            console.warn('Warning: Only ' + zipFiles.length + ' out of ' + sizes.length + ' videos were added to ZIP for ' + lang);
           }
           
           // Generate ZIP for this language
           var blob = await zip.generateAsync({ type: 'blob' });
+          console.log('ZIP generated for ' + lang + ':', blob.size, 'bytes, containing', zipFiles.length, 'files');
+          
           var url = URL.createObjectURL(blob);
           var a = document.createElement('a');
           a.href = url;
