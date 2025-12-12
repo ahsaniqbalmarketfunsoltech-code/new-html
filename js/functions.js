@@ -949,7 +949,24 @@ var ExportFunctions = {
       }
     }
     
-    // Method 3: Get computed styles from preview elements (fallback)
+    // Method 3: Extract styles from stored template HTML
+    // This is important because when template is loaded, styles in <head> are applied
+    // but may not be in the container's DOM tree
+    if (TemplateEngine.templateHTML) {
+      var templateStyleRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi;
+      var templateStyleMatch;
+      while ((templateStyleMatch = templateStyleRegex.exec(TemplateEngine.templateHTML)) !== null) {
+        if (templateStyleMatch[1] && templateStyleMatch[1].trim()) {
+          var templateStyleContent = templateStyleMatch[1].trim();
+          // Avoid duplicates
+          if (styles.indexOf(templateStyleContent) === -1) {
+            styles += templateStyleContent + '\n';
+          }
+        }
+      }
+    }
+    
+    // Method 4: Get computed styles from preview elements (fallback)
     if (!styles || styles.trim().length === 0) {
       console.warn('No styles found in template, using default styles');
       // Add minimal default styles to ensure content displays
@@ -959,9 +976,14 @@ var ExportFunctions = {
     // Get the preview content HTML - preserve exact structure from preview
     // The clone already has the preview-panel structure, so we get its innerHTML
     // which contains the actual ad content (ad-container, banner-ad, etc.)
-    // CRITICAL: Ensure we get the video-ad-container with footer included
+    // CRITICAL: Ensure we get the container with all content included
     var videoAdContainer = clone.querySelector('.video-ad-container');
+    var appAdContainer = clone.querySelector('.app-ad-container');
+    var bannerAd = clone.querySelector('.banner-ad');
+    var adContainer = clone.querySelector('.ad-container');
     var previewContent;
+    
+    // Try different container types in order of preference
     if (videoAdContainer) {
       // Get the entire video-ad-container including footer
       previewContent = videoAdContainer.outerHTML;
@@ -971,8 +993,20 @@ var ExportFunctions = {
         // Footer exists, make sure it's included
         console.log('Footer found in video-ad-container');
       }
+    } else if (appAdContainer) {
+      // Template 6 uses app-ad-container
+      previewContent = appAdContainer.outerHTML;
+      console.log('Found app-ad-container for template 6');
+    } else if (bannerAd) {
+      // Template 2 uses banner-ad
+      previewContent = bannerAd.outerHTML;
+    } else if (adContainer) {
+      // Generic ad-container
+      previewContent = adContainer.outerHTML;
     } else {
+      // Fallback: get all content from clone (should work for most templates)
       previewContent = clone.innerHTML;
+      console.log('Using clone.innerHTML as fallback');
     }
     
     // Create complete HTML document exactly 320×480 size, centered on page

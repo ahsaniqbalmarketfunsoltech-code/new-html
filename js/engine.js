@@ -14,6 +14,7 @@ var TemplateEngine = {
   audioFile: null,
   languageDropdownInitialized: false,
   templateList: ['template1', 'template2', 'template3', 'template4'], // Auto-update: Add new template names here (without .html)
+  templateHTML: null, // Store original template HTML for style extraction
 
   /**
    * Initialize the template engine
@@ -232,6 +233,7 @@ var TemplateEngine = {
       this.currentTemplate = null;
       this.templateData = {};
       this.audioFile = null;
+      this.templateHTML = null;
       return;
     }
 
@@ -254,6 +256,7 @@ var TemplateEngine = {
     this.currentTemplate = templateName;
     this.templateData = {};
     this.audioFile = null;
+    this.templateHTML = null; // Will be set when template loads
 
     // Hide video button initially
     var videoBtn = document.getElementById('downloadVideoBtn');
@@ -274,6 +277,8 @@ var TemplateEngine = {
         if (loading) {
           loading.classList.remove('active');
         }
+        // Store original template HTML for style extraction during export
+        TemplateEngine.templateHTML = htmlContent;
         container.innerHTML = htmlContent;
         if (sharedPanel) {
           sharedPanel.style.display = 'block';
